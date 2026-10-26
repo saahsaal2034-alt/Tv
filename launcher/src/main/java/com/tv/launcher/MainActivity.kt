@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.Locale
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
@@ -37,6 +39,15 @@ class MainActivity : Activity() {
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = reload()
+    }
+
+    // Always show the launcher in English, whatever language the TV is set to.
+    override fun attachBaseContext(base: Context) {
+        val config = Configuration(base.resources.configuration).apply {
+            setLocale(Locale.ENGLISH)
+            setLayoutDirection(Locale.ENGLISH)
+        }
+        super.attachBaseContext(base.createConfigurationContext(config))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,12 +150,8 @@ class MainActivity : Activity() {
             if (isFavorite) {
                 add(R.string.unpin to { prefs.favorites = favorites - app.packageName })
                 val index = favorites.indexOf(app.packageName)
-                // The row is mirrored in right-to-left languages such as Arabic.
-                val rtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-                val earlier = if (rtl) R.string.move_right else R.string.move_left
-                val later = if (rtl) R.string.move_left else R.string.move_right
-                if (index > 0) add(earlier to { prefs.favorites = favorites.swap(index, index - 1) })
-                if (index < favorites.lastIndex) add(later to { prefs.favorites = favorites.swap(index, index + 1) })
+                if (index > 0) add(R.string.move_left to { prefs.favorites = favorites.swap(index, index - 1) })
+                if (index < favorites.lastIndex) add(R.string.move_right to { prefs.favorites = favorites.swap(index, index + 1) })
             } else {
                 add(R.string.pin to { prefs.favorites = favorites + app.packageName })
             }
