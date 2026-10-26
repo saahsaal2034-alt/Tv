@@ -15,7 +15,7 @@ On the Home tab:
 ### Install it from the TV (no computer needed)
 1. On the TV, install **TV Bro** (or **Downloader**) from the Play Store.
 2. Open this link in it and install the app:
-   `github.com/saahsaal2034-alt/Tv/releases/download/latest/vortrex-tv.apk`
+   `github.com/saahsaal2034-alt/Tv/releases/download/latest/vortrex.apk`
 3. **Settings → System → Accessibility → Vortrex Home button & phone remote → On.**
    This makes Home open Vortrex and powers the phone remote.
 
