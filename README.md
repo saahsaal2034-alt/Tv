@@ -1,5 +1,22 @@
 # Xiaomi Google TV optimizer
 
+## Custom home screen (TV Home)
+`launcher/` is a lightweight home screen app that replaces the stock Google TV one.
+It has no ads, no recommendation rows, and nothing running in the background.
+- Clock, date, and a **Favorites** row you arrange yourself
+- **All apps** grid, with the apps you use most at the front
+- Hold OK on any app to add it to favorites, move it, hide it, or open its app info
+- Hold OK on **Settings** to open network settings or to unhide apps
+
+### Install it
+1. Do the one-time TV setup below.
+2. Download the APK: in GitHub, open **Actions → Build launcher**, choose the latest run, and download **tv-launcher**. Unzip it.
+3. Run `./install-launcher.sh launcher-release.apk 192.168.0.169`
+
+To go back to the stock home screen, run `./uninstall-launcher.sh 192.168.0.169`
+
+---
+
 Scripts that speed up a Xiaomi (Google TV) over your home Wi-Fi using ADB.
 Everything they change can be undone with `restore.sh`.
 
