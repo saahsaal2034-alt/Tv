@@ -19,12 +19,38 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.2"
+                android:text="@string/brand"
+                android:textColor="@color/accent"
+                android:textSize="40sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.3"
+                android:text="@string/brand_tagline"
+                android:textAllCaps="true"
+                android:textColor="@color/text_dim"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="28dp"
+            android:gravity="end"
+            android:orientation="vertical">
+
             <TextClock
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-light"
                 android:textColor="@color/text"
-                android:textSize="44sp" />
+                android:textSize="40sp" />
 
             <TextClock
                 android:layout_width="wrap_content"
@@ -32,7 +58,7 @@
                 android:format12Hour="EEEE, d MMMM"
                 android:format24Hour="EEEE, d MMMM"
                 android:textColor="@color/text_dim"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <TextView

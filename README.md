@@ -1,6 +1,6 @@
 # Xiaomi Google TV optimizer
 
-## Custom home screen (TV Home)
+## Custom home screen (Vortrex TV)
 `launcher/` is a lightweight home screen app that replaces the stock Google TV one.
 It has no ads, no recommendation rows, and nothing running in the background.
 - Clock, date, and a **Favorites** row you arrange yourself

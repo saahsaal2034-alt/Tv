@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">فورتركس TV</string>
+    <string name="brand_tagline">تلفاز محسّن</string>
+    <string name="favorites">المفضلة</string>
+    <string name="all_apps">كل التطبيقات</string>
+    <string name="settings">الإعدادات</string>
+    <string name="pin">إضافة إلى المفضلة</string>
+    <string name="unpin">إزالة من المفضلة</string>
+    <string name="move_left">نقل لليسار</string>
+    <string name="move_right">نقل لليمين</string>
+    <string name="hide">إخفاء التطبيق</string>
+    <string name="app_info">معلومات التطبيق</string>
+    <string name="show_hidden">إظهار التطبيقات المخفية</string>
+    <string name="tv_settings">إعدادات التلفاز</string>
+    <string name="network_settings">إعدادات الشبكة</string>
+    <string name="favorites_empty">اضغط مطولًا على OK في أي تطبيق لإضافته هنا</string>
+    <string name="no_hidden">لا توجد تطبيقات مخفية</string>
+    <string name="cant_open">تعذّر فتح هذا</string>
+</resources>

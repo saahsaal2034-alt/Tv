@@ -139,8 +139,12 @@ class MainActivity : Activity() {
             if (isFavorite) {
                 add(R.string.unpin to { prefs.favorites = favorites - app.packageName })
                 val index = favorites.indexOf(app.packageName)
-                if (index > 0) add(R.string.move_left to { prefs.favorites = favorites.swap(index, index - 1) })
-                if (index < favorites.lastIndex) add(R.string.move_right to { prefs.favorites = favorites.swap(index, index + 1) })
+                // The row is mirrored in right-to-left languages such as Arabic.
+                val rtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                val earlier = if (rtl) R.string.move_right else R.string.move_left
+                val later = if (rtl) R.string.move_left else R.string.move_right
+                if (index > 0) add(earlier to { prefs.favorites = favorites.swap(index, index - 1) })
+                if (index < favorites.lastIndex) add(later to { prefs.favorites = favorites.swap(index, index + 1) })
             } else {
                 add(R.string.pin to { prefs.favorites = favorites + app.packageName })
             }
@@ -172,7 +176,7 @@ class MainActivity : Activity() {
     private fun showHiddenApps() {
         val hiddenApps = installed.filter { it.packageName in prefs.hidden }
         if (hiddenApps.isEmpty()) {
-            Toast.makeText(this, "No hidden apps", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.no_hidden, Toast.LENGTH_SHORT).show()
             return
         }
         // Ticked apps stay hidden; untick one to show it again.
@@ -193,7 +197,7 @@ class MainActivity : Activity() {
         startActivity(intent)
         true
     } catch (e: Exception) {
-        Toast.makeText(this, "Couldn't open that", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.cant_open, Toast.LENGTH_SHORT).show()
         false
     }
 

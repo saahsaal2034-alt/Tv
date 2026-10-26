@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">TV Home</string>
+    <string name="app_name">Vortrex TV</string>
+    <string name="brand" translatable="false">VORTREX</string>
+    <string name="brand_tagline">Optimized TV</string>
     <string name="favorites">Favorites</string>
     <string name="all_apps">All apps</string>
     <string name="settings">Settings</string>
@@ -13,4 +15,6 @@
     <string name="tv_settings">TV settings</string>
     <string name="network_settings">Network settings</string>
     <string name="favorites_empty">Hold OK on any app to add it here</string>
+    <string name="no_hidden">No hidden apps</string>
+    <string name="cant_open">Couldn't open that</string>
 </resources>
