@@ -17,4 +17,6 @@
     <string name="favorites_empty">Hold OK on any app to add it here</string>
     <string name="no_hidden">No hidden apps</string>
     <string name="cant_open">Couldn\'t open that</string>
+    <string name="home_button_label">Vortrex Home button</string>
+    <string name="home_button_description">Opens Vortrex TV when you press Home on the remote. It only listens for the Home button.</string>
 </resources>

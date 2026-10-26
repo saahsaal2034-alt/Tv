@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,7 +20,17 @@ jobs:
         with:
           gradle-version: 8.14.3
       - run: gradle :launcher:assembleRelease
+      - run: cp launcher/build/outputs/apk/release/launcher-release.apk vortrex-tv.apk
       - uses: actions/upload-artifact@v4
         with:
           name: tv-launcher
-          path: launcher/build/outputs/apk/release/launcher-release.apk
+          path: vortrex-tv.apk
+      # Publishes the APK at a fixed link the TV's Downloader app can open:
+      # https://github.com/<owner>/<repo>/releases/download/latest/vortrex-tv.apk
+      - name: Publish to the "latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || \
+            gh release create latest --title "Vortrex TV" --notes "Latest build of the Vortrex TV launcher." --target "$GITHUB_SHA"
+          gh release upload latest vortrex-tv.apk --clobber
