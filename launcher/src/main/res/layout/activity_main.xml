@@ -9,16 +9,16 @@
         android:layout_width="720dp"
         android:layout_height="720dp"
         android:layout_gravity="top|start"
-        android:layout_marginStart="-260dp"
-        android:layout_marginTop="-320dp"
+        android:layout_marginStart="-300dp"
+        android:layout_marginTop="-360dp"
         android:background="@drawable/glow_violet" />
 
     <View
         android:layout_width="640dp"
         android:layout_height="640dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="-240dp"
-        android:layout_marginBottom="-300dp"
+        android:layout_marginEnd="-260dp"
+        android:layout_marginBottom="-320dp"
         android:background="@drawable/glow_blue" />
 
     <!-- Top bar: brand, tabs, small clock. -->
@@ -37,7 +37,7 @@
             android:letterSpacing="0.45"
             android:text="@string/brand"
             android:textColor="@color/accent"
-            android:textSize="16sp" />
+            android:textSize="15sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -75,118 +75,149 @@
             android:visibility="invisible" />
     </FrameLayout>
 
-    <LinearLayout
+    <!-- Home: clock and apps on the left, phone remote on the right. -->
+    <FrameLayout
         android:id="@+id/panel_home"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:clipChildren="false"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-thin"
-            android:format12Hour="h:mm"
-            android:format24Hour="HH:mm"
-            android:includeFontPadding="false"
-            android:textColor="@color/text"
-            android:textSize="120sp" />
-
-        <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:format12Hour="EEEE · d MMMM"
-            android:format24Hour="EEEE · d MMMM"
-            android:letterSpacing="0.08"
-            android:textColor="@color/text_dim"
-            android:textSize="18sp" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="104dp"
+        android:layout_marginEnd="56dp"
+        android:layout_marginBottom="48dp"
+        android:clipChildren="false">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_gravity="start|center_vertical"
             android:clipChildren="false"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@+id/netflix"
-                android:layout_width="288dp"
-                android:layout_height="162dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/tile"
-                android:contentDescription="@string/netflix"
-                android:focusable="true"
-                android:foreground="@drawable/tile_ring"
-                android:nextFocusRight="@id/youtube">
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-thin"
+                android:format12Hour="h:mm"
+                android:format24Hour="HH:mm"
+                android:includeFontPadding="false"
+                android:textColor="@color/text"
+                android:textSize="104sp" />
 
-                <ImageView
-                    android:id="@+id/netflix_banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:format12Hour="EEEE · d MMMM"
+                android:format24Hour="EEEE · d MMMM"
+                android:letterSpacing="0.08"
+                android:textColor="@color/text_dim"
+                android:textSize="17sp" />
 
-                <TextView
-                    android:id="@+id/netflix_fallback"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:fontFamily="sans-serif-condensed"
-                    android:letterSpacing="0.04"
-                    android:text="@string/netflix"
-                    android:textColor="@color/netflix"
-                    android:textSize="44sp"
-                    android:textStyle="bold" />
-            </FrameLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:clipChildren="false"
+                android:orientation="horizontal">
 
-            <FrameLayout
-                android:id="@+id/youtube"
-                android:layout_width="288dp"
-                android:layout_height="162dp"
-                android:layout_marginStart="20dp"
-                android:background="@drawable/tile"
-                android:contentDescription="@string/youtube"
-                android:focusable="true"
-                android:foreground="@drawable/tile_ring"
-                android:nextFocusLeft="@id/netflix">
-
-                <ImageView
-                    android:id="@+id/youtube_banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/youtube_fallback"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="52dp"
-                        android:layout_height="37dp"
-                        android:src="@drawable/ic_play" />
+                <FrameLayout
+                    android:id="@+id/netflix"
+                    android:layout_width="232dp"
+                    android:layout_height="130dp"
+                    android:background="@drawable/tile_netflix"
+                    android:contentDescription="@string/netflix"
+                    android:focusable="true"
+                    android:foreground="@drawable/tile_ring"
+                    android:nextFocusRight="@id/youtube">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:text="@string/youtube"
-                        android:textColor="@color/text"
-                        android:textSize="34sp"
+                        android:layout_gravity="center"
+                        android:fontFamily="sans-serif-condensed"
+                        android:letterSpacing="0.02"
+                        android:text="@string/netflix"
+                        android:textColor="@color/netflix"
+                        android:textSize="38sp"
                         android:textStyle="bold" />
-                </LinearLayout>
-            </FrameLayout>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/youtube"
+                    android:layout_width="232dp"
+                    android:layout_height="130dp"
+                    android:layout_marginStart="24dp"
+                    android:background="@drawable/tile_youtube"
+                    android:contentDescription="@string/youtube"
+                    android:focusable="true"
+                    android:foreground="@drawable/tile_ring"
+                    android:nextFocusLeft="@id/netflix">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="44dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_play" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="@string/youtube"
+                            android:textColor="@color/text"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+        <!-- Phone remote QR code. -->
+        <LinearLayout
+            android:id="@+id/remote_card"
+            android:layout_width="232dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:background="@drawable/glass"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="22dp">
+
+            <ImageView
+                android:id="@+id/qr"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:background="@drawable/qr_bg"
+                android:padding="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/remote_title"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/remote_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/remote_hint"
+                android:textColor="@color/text_dim"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </FrameLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/panel_apps"
@@ -209,52 +240,4 @@
         android:clipChildren="false"
         android:orientation="horizontal"
         android:visibility="gone" />
-
-    <!-- Phone remote QR code. -->
-    <LinearLayout
-        android:id="@+id/remote_card"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="36dp"
-        android:background="@drawable/glass"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="14dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/remote_title"
-                android:textColor="@color/text"
-                android:textSize="15sp" />
-
-            <TextView
-                android:id="@+id/remote_hint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:lineSpacingExtra="2dp"
-                android:text="@string/remote_hint"
-                android:textColor="@color/text_dim"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/qr"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:background="@drawable/qr_bg"
-            android:padding="6dp"
-            android:visibility="gone" />
-    </LinearLayout>
 </FrameLayout>

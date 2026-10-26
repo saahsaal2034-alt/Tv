@@ -5,8 +5,8 @@
     <string name="youtube" translatable="false">YouTube</string>
     <string name="settings">Settings</string>
     <string name="remote_title">Phone remote</string>
-    <string name="remote_hint">Scan with your phone camera.\nYour phone must be on the same Wi-Fi.</string>
-    <string name="remote_off">Turn on Vortrex in\nSettings → System → Accessibility\nto use your phone as a remote.</string>
+    <string name="remote_hint">Scan with your phone camera.\nSame Wi-Fi as the TV.</string>
+    <string name="remote_off">Scan with your phone camera.\nFor arrows and typing, turn on\nVortrex in Settings → System →\nAccessibility.</string>
     <string name="remote_no_wifi">Connect the TV to Wi-Fi\nto use your phone as a remote.</string>
     <string name="cant_open">Couldn\'t open that</string>
     <string name="home_button_label">Vortrex Home button &amp; phone remote</string>

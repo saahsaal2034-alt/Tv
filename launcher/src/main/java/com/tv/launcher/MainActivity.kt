@@ -31,7 +31,6 @@ class MainActivity : Activity() {
     private lateinit var tabs: List<View>
     private lateinit var panels: List<View>
     private lateinit var netflix: View
-    private lateinit var remoteCard: View
     private lateinit var smallClock: View
     private lateinit var qr: ImageView
     private lateinit var remoteHint: TextView
@@ -54,13 +53,17 @@ class MainActivity : Activity() {
 
         tabs = listOf(R.id.tab_home, R.id.tab_apps, R.id.tab_settings).map { findViewById(it) }
         panels = listOf(R.id.panel_home, R.id.panel_apps, R.id.panel_settings).map { findViewById(it) }
-        remoteCard = findViewById(R.id.remote_card)
         smallClock = findViewById(R.id.small_clock)
         qr = findViewById(R.id.qr)
         remoteHint = findViewById(R.id.remote_hint)
 
-        netflix = setUpTile(R.id.netflix, R.id.netflix_banner, R.id.netflix_fallback, NETFLIX)
-        setUpTile(R.id.youtube, R.id.youtube_banner, R.id.youtube_fallback, YOUTUBE)
+        netflix = setUpTile(R.id.netflix, NETFLIX)
+        setUpTile(R.id.youtube, YOUTUBE)
+
+        val appContext = applicationContext
+        RemoteServer.start(this) { command, text ->
+            mainHandler.post { RemoteCommands.run(appContext, command, text) }
+        }
         setUpApps()
         setUpSettings()
 
@@ -111,20 +114,12 @@ class MainActivity : Activity() {
         selectedTab = index
         tabs.forEachIndexed { i, tab -> tab.isSelected = i == index }
         panels.forEachIndexed { i, panel -> panel.visibility = if (i == index) View.VISIBLE else View.GONE }
-        remoteCard.visibility = if (index == 0) View.VISIBLE else View.GONE
         smallClock.visibility = if (index == 0) View.INVISIBLE else View.VISIBLE
     }
 
-    private fun setUpTile(tileId: Int, bannerId: Int, fallbackId: Int, pkg: String): View {
+    private fun setUpTile(tileId: Int, pkg: String): View {
         val tile = findViewById<View>(tileId)
         tile.clipToOutline = true
-        Apps.banner(this, pkg)?.let { banner ->
-            findViewById<ImageView>(bannerId).apply {
-                setImageDrawable(banner)
-                visibility = View.VISIBLE
-            }
-            findViewById<View>(fallbackId).visibility = View.GONE
-        }
         tile.setOnClickListener { Apps.launch(this, pkg) }
         tile.setOnFocusChangeListener { v, hasFocus -> focusZoom(v, hasFocus) }
         return tile
@@ -177,23 +172,17 @@ class MainActivity : Activity() {
 
     private fun updateRemote() {
         val url = RemoteServer.url(this)
-        when {
-            !RemoteServer.running -> showRemoteHint(R.string.remote_off)
-            url == null -> showRemoteHint(R.string.remote_no_wifi)
-            else -> {
-                if (url != qrUrl) {
-                    qr.setImageBitmap(qrCode(url, 512))
-                    qrUrl = url
-                }
-                qr.visibility = View.VISIBLE
-                remoteHint.setText(R.string.remote_hint)
-            }
+        if (url == null) {
+            qr.visibility = View.GONE
+            remoteHint.setText(R.string.remote_no_wifi)
+            return
         }
-    }
-
-    private fun showRemoteHint(text: Int) {
-        qr.visibility = View.GONE
-        remoteHint.setText(text)
+        if (url != qrUrl) {
+            qr.setImageBitmap(qrCode(url, 512))
+            qrUrl = url
+        }
+        qr.visibility = View.VISIBLE
+        remoteHint.setText(if (HomeButtonService.instance != null) R.string.remote_hint else R.string.remote_off)
     }
 
     private fun qrCode(text: String, size: Int): Bitmap {

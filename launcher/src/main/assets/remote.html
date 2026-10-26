@@ -68,6 +68,11 @@
   }
   .kbd input:focus { border-color: var(--accent); }
   .kbd button { width: 72px; height: 56px; border-radius: 18px; font-weight: 600; }
+  .notice {
+    display: none; font-size: 13px; line-height: 1.4; color: var(--dim); text-align: center;
+    padding: 12px 16px; border-radius: 16px; background: var(--glass); border: 1px solid var(--stroke);
+  }
+  .notice.show { display: block; }
   .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .netflix { color: #e50914; font: 800 20px/1 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .02em; }
   .youtube { display: flex; gap: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
@@ -82,6 +87,7 @@
 </header>
 
 <main>
+  <div class="notice" id="notice">Arrows, OK, Back and typing need one more step on the TV: turn on <b>Vortrex</b> in Settings → System → Accessibility.</div>
   <div class="pad">
     <button class="up" data-c="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
     <button class="left" data-c="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -151,6 +157,12 @@
     for (const type of ["pointerup", "pointerleave", "pointercancel"]) button.addEventListener(type, stop);
     button.addEventListener("contextmenu", e => e.preventDefault());
   }
+
+  // Ask the TV whether the arrows and keyboard are available.
+  fetch("/s?k=" + encodeURIComponent(key))
+    .then(r => r.json())
+    .then(s => { setOnline(true); document.getElementById("notice").classList.toggle("show", !s.full); })
+    .catch(() => setOnline(false));
 
   // Keyboard: whatever is typed here replaces the text in the TV's search box.
   const kbd = document.getElementById("kbd");

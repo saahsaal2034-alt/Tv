@@ -74,6 +74,10 @@ object RemoteServer {
             when {
                 query["k"] != key -> respond(out, "403 Forbidden", "text/plain", "Scan the QR code on the TV again.".toByteArray())
                 path == "/" -> respond(out, "200 OK", "text/html; charset=utf-8", page)
+                path == "/s" -> {
+                    val full = HomeButtonService.instance != null
+                    respond(out, "200 OK", "application/json", "{\"full\":$full}".toByteArray())
+                }
                 path == "/k" -> {
                     query["c"]?.let { onCommand(it, query["t"]) }
                     respond(out, "204 No Content", "text/plain", ByteArray(0))
