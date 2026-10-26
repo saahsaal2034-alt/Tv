@@ -58,6 +58,16 @@
     font-size: 17px; letter-spacing: .08em;
   }
   .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  #kbd-toggle { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: 15px; }
+  .kbd { display: none; gap: 10px; }
+  .kbd.open { display: flex; }
+  .kbd input {
+    flex: 1; min-width: 0; height: 56px; padding: 0 18px; border-radius: 18px;
+    background: var(--glass); border: 1px solid var(--stroke); color: var(--text);
+    font: inherit; font-size: 17px; outline: none;
+  }
+  .kbd input:focus { border-color: var(--accent); }
+  .kbd button { width: 72px; height: 56px; border-radius: 18px; font-weight: 600; }
   .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .netflix { color: #e50914; font: 800 20px/1 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .02em; }
   .youtube { display: flex; gap: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
@@ -92,6 +102,12 @@
     <button data-c="volup" data-repeat aria-label="Volume up"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 12h4M19 10v4"/></svg></button>
   </div>
 
+  <button id="kbd-toggle" aria-label="Keyboard"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg><span>Keyboard</span></button>
+  <div class="kbd" id="kbd">
+    <input id="text" type="text" placeholder="Type on the TV…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+    <button id="go">Go</button>
+  </div>
+
   <div class="apps">
     <button data-c="netflix" class="netflix">NETFLIX</button>
     <button data-c="youtube" class="youtube"><i></i>YouTube</button>
@@ -102,8 +118,10 @@
   const key = new URLSearchParams(location.search).get("k") || "";
   const status = document.getElementById("status");
 
-  function send(command) {
-    fetch("/k?c=" + encodeURIComponent(command) + "&k=" + encodeURIComponent(key), { method: "POST" })
+  function send(command, text) {
+    let url = "/k?c=" + encodeURIComponent(command) + "&k=" + encodeURIComponent(key);
+    if (text !== undefined) url += "&t=" + encodeURIComponent(text);
+    fetch(url, { method: "POST" })
       .then(r => setOnline(r.ok))
       .catch(() => setOnline(false));
   }
@@ -133,6 +151,28 @@
     for (const type of ["pointerup", "pointerleave", "pointercancel"]) button.addEventListener(type, stop);
     button.addEventListener("contextmenu", e => e.preventDefault());
   }
+
+  // Keyboard: whatever is typed here replaces the text in the TV's search box.
+  const kbd = document.getElementById("kbd");
+  const input = document.getElementById("text");
+  let typing;
+  document.getElementById("kbd-toggle").addEventListener("click", () => {
+    kbd.classList.toggle("open");
+    if (kbd.classList.contains("open")) { input.value = ""; input.focus(); }
+  });
+  input.addEventListener("input", () => {
+    clearTimeout(typing);
+    typing = setTimeout(() => send("type", input.value), 200);
+  });
+  function submit() {
+    clearTimeout(typing);
+    send("type", input.value);
+    setTimeout(() => send("enter"), 150);
+    input.blur();
+    kbd.classList.remove("open");
+  }
+  input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submit(); } });
+  document.getElementById("go").addEventListener("click", submit);
 </script>
 </body>
 </html>

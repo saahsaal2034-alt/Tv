@@ -26,7 +26,7 @@ object RemoteServer {
 
     private var server: ServerSocket? = null
 
-    fun start(context: Context, onCommand: (String) -> Unit) {
+    fun start(context: Context, onCommand: (command: String, text: String?) -> Unit) {
         if (running) return
         val appContext = context.applicationContext
         val key = key(appContext)
@@ -59,7 +59,7 @@ object RemoteServer {
     /** The address the QR code points to, or null when the TV has no network. */
     fun url(context: Context): String? = localIp()?.let { "http://$it:$PORT/?k=${key(context)}" }
 
-    private fun handle(client: Socket, key: String, page: ByteArray, onCommand: (String) -> Unit) {
+    private fun handle(client: Socket, key: String, page: ByteArray, onCommand: (String, String?) -> Unit) {
         client.use {
             client.soTimeout = 5000
             val reader = BufferedReader(InputStreamReader(client.getInputStream()))
@@ -75,7 +75,7 @@ object RemoteServer {
                 query["k"] != key -> respond(out, "403 Forbidden", "text/plain", "Scan the QR code on the TV again.".toByteArray())
                 path == "/" -> respond(out, "200 OK", "text/html; charset=utf-8", page)
                 path == "/k" -> {
-                    query["c"]?.let(onCommand)
+                    query["c"]?.let { onCommand(it, query["t"]) }
                     respond(out, "204 No Content", "text/plain", ByteArray(0))
                 }
                 else -> respond(out, "404 Not Found", "text/plain", ByteArray(0))

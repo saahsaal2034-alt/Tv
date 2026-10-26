@@ -8,7 +8,8 @@
 
 On the Home tab:
 - A **QR code**: scan it with your phone camera to get a remote on your phone
-  (arrows, OK, back, home, play/pause, volume, and Netflix/YouTube shortcuts).
+  (arrows, OK, back, home, play/pause, volume, a keyboard for typing searches,
+  and Netflix/YouTube shortcuts).
   The phone must be on the same Wi-Fi as the TV.
 
 ### Install it from the TV (no computer needed)
