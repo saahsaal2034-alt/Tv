@@ -19,6 +19,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.14.3
+      # Reuse the same signing key on every build so updates install over the
+      # old version. Gradle creates the key on the first run.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: signing-key-v1
       - run: gradle :launcher:assembleRelease
       - run: cp launcher/build/outputs/apk/release/launcher-release.apk vortrex-tv.apk
       - uses: actions/upload-artifact@v4

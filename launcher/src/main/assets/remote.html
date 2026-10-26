@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06060c">
+<title>Vortrex Remote</title>
+<style>
+  :root {
+    --bg: #06060c;
+    --glass: rgba(255,255,255,0.07);
+    --glass-hi: rgba(255,255,255,0.16);
+    --stroke: rgba(255,255,255,0.10);
+    --text: #f5f5fa;
+    --dim: rgba(245,245,250,0.55);
+    --accent: #b9a6ff;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background:
+      radial-gradient(60vmax 60vmax at -10% -10%, rgba(124,77,255,0.33), transparent 60%),
+      radial-gradient(55vmax 55vmax at 110% 110%, rgba(48,168,255,0.25), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font: 500 16px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    user-select: none; -webkit-user-select: none; touch-action: manipulation;
+    overflow: hidden;
+  }
+  header { width: 100%; max-width: 380px; display: flex; justify-content: space-between; align-items: center; }
+  .brand { letter-spacing: .45em; font-size: 13px; color: var(--accent); }
+  .status { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #3ddc84; }
+  .status.off::before { background: #ff5a5a; }
+  main { flex: 1; width: 100%; max-width: 380px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+  button {
+    font: inherit; color: var(--text); background: var(--glass); border: 1px solid var(--stroke);
+    border-radius: 20px; height: 60px; display: grid; place-items: center; cursor: pointer;
+    transition: transform .08s ease, background .08s ease;
+  }
+  button:active, button.held { transform: scale(.94); background: var(--glass-hi); }
+  button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .pad {
+    position: relative; width: min(78vw, 300px); aspect-ratio: 1; margin: 0 auto; border-radius: 50%;
+    background: var(--glass); border: 1px solid var(--stroke);
+  }
+  .pad button { position: absolute; background: transparent; border: 0; border-radius: 50%; width: 33%; height: 33%; }
+  .pad button:active { background: rgba(255,255,255,0.08); }
+  .pad .up { top: 2%; left: 33.5%; } .pad .down { bottom: 2%; left: 33.5%; }
+  .pad .left { left: 2%; top: 33.5%; } .pad .right { right: 2%; top: 33.5%; }
+  .pad .ok {
+    top: 31%; left: 31%; width: 38%; height: 38%;
+    background: rgba(255,255,255,0.12); border: 1px solid var(--stroke);
+    font-size: 17px; letter-spacing: .08em;
+  }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .netflix { color: #e50914; font: 800 20px/1 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .02em; }
+  .youtube { display: flex; gap: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+  .youtube i { width: 26px; height: 18px; border-radius: 5px; background: #ff0033; position: relative; }
+  .youtube i::after { content: ""; position: absolute; left: 10px; top: 5px; border-left: 8px solid #fff; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">VORTREX</div>
+  <div class="status" id="status">Ready</div>
+</header>
+
+<main>
+  <div class="pad">
+    <button class="up" data-c="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button class="left" data-c="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button class="ok" data-c="ok">OK</button>
+    <button class="right" data-c="right" data-repeat aria-label="Right"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="down" data-c="down" data-repeat aria-label="Down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
+
+  <div class="row">
+    <button data-c="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+    <button data-c="home" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
+    <button data-c="playpause" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path d="M6 5v14l8-7z"/><path d="M17 5v14M21 5v14"/></svg></button>
+  </div>
+
+  <div class="row">
+    <button data-c="voldown" data-repeat aria-label="Volume down"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 12h4"/></svg></button>
+    <button data-c="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/></svg></button>
+    <button data-c="volup" data-repeat aria-label="Volume up"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 12h4M19 10v4"/></svg></button>
+  </div>
+
+  <div class="apps">
+    <button data-c="netflix" class="netflix">NETFLIX</button>
+    <button data-c="youtube" class="youtube"><i></i>YouTube</button>
+  </div>
+</main>
+
+<script>
+  const key = new URLSearchParams(location.search).get("k") || "";
+  const status = document.getElementById("status");
+
+  function send(command) {
+    fetch("/k?c=" + encodeURIComponent(command) + "&k=" + encodeURIComponent(key), { method: "POST" })
+      .then(r => setOnline(r.ok))
+      .catch(() => setOnline(false));
+  }
+
+  function setOnline(ok) {
+    status.textContent = ok ? "Connected" : "TV not reachable";
+    status.classList.toggle("off", !ok);
+  }
+
+  for (const button of document.querySelectorAll("button[data-c]")) {
+    const command = button.dataset.c;
+    let delay, repeat;
+    const stop = () => {
+      clearTimeout(delay); clearInterval(repeat);
+      button.classList.remove("held");
+    };
+    button.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      button.classList.add("held");
+      send(command);
+      if (navigator.vibrate) navigator.vibrate(8);
+      // Holding an arrow or volume button keeps pressing it.
+      if (button.hasAttribute("data-repeat")) {
+        delay = setTimeout(() => { repeat = setInterval(() => send(command), 120); }, 400);
+      }
+    });
+    for (const type of ["pointerup", "pointerleave", "pointercancel"]) button.addEventListener(type, stop);
+    button.addEventListener("contextmenu", e => e.preventDefault());
+  }
+</script>
+</body>
+</html>

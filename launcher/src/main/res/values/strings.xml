@@ -1,22 +1,14 @@
 <resources>
     <string name="app_name">Vortrex TV</string>
     <string name="brand" translatable="false">VORTREX</string>
-    <string name="brand_tagline">Optimized TV</string>
-    <string name="favorites">Favorites</string>
-    <string name="all_apps">All apps</string>
+    <string name="netflix" translatable="false">NETFLIX</string>
+    <string name="youtube" translatable="false">YouTube</string>
     <string name="settings">Settings</string>
-    <string name="pin">Add to favorites</string>
-    <string name="unpin">Remove from favorites</string>
-    <string name="move_left">Move left</string>
-    <string name="move_right">Move right</string>
-    <string name="hide">Hide app</string>
-    <string name="app_info">App info</string>
-    <string name="show_hidden">Show hidden apps</string>
-    <string name="tv_settings">TV settings</string>
-    <string name="network_settings">Network settings</string>
-    <string name="favorites_empty">Hold OK on any app to add it here</string>
-    <string name="no_hidden">No hidden apps</string>
+    <string name="remote_title">Phone remote</string>
+    <string name="remote_hint">Scan with your phone camera.\nYour phone must be on the same Wi-Fi.</string>
+    <string name="remote_off">Turn on Vortrex in\nSettings → System → Accessibility\nto use your phone as a remote.</string>
+    <string name="remote_no_wifi">Connect the TV to Wi-Fi\nto use your phone as a remote.</string>
     <string name="cant_open">Couldn\'t open that</string>
-    <string name="home_button_label">Vortrex Home button</string>
-    <string name="home_button_description">Opens Vortrex TV when you press Home on the remote. It only listens for the Home button.</string>
+    <string name="home_button_label">Vortrex Home button &amp; phone remote</string>
+    <string name="home_button_description">Opens Vortrex TV when you press Home, and lets the phone remote control the TV.</string>
 </resources>

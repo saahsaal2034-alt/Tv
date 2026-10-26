@@ -7,6 +7,9 @@
     <!-- Needed on Android 11+ to see the other installed apps. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <!-- Serves the phone remote page over the home Wi-Fi. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="false"
         android:banner="@drawable/banner"

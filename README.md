@@ -1,19 +1,21 @@
 # Xiaomi Google TV optimizer
 
 ## Custom home screen (Vortrex TV)
-`launcher/` is a lightweight home screen app that replaces the stock Google TV one.
-It has no ads, no recommendation rows, and nothing running in the background.
-- Clock, date, and a **Favorites** row you arrange yourself
-- **All apps** grid, with the apps you use most at the front
-- Hold OK on any app to add it to favorites, move it, hide it, or open its app info
-- Hold OK on **Settings** to open network settings or to unhide apps
+`launcher/` replaces the Google TV home screen with a minimal one:
+- A big clock and date
+- Two tiles: **Netflix** and **YouTube**
+- A **QR code**: scan it with your phone camera to get a remote on your phone
+  (arrows, OK, back, home, play/pause, volume, and Netflix/YouTube shortcuts).
+  The phone must be on the same Wi-Fi as the TV.
 
-### Install it
-1. Do the one-time TV setup below.
-2. Download the APK: in GitHub, open **Actions → Build launcher**, choose the latest run, and download **tv-launcher**. Unzip it.
-3. Run `./install-launcher.sh launcher-release.apk 192.168.0.169`
+### Install it from the TV (no computer needed)
+1. On the TV, install **TV Bro** (or **Downloader**) from the Play Store.
+2. Open this link in it and install the app:
+   `github.com/saahsaal2034-alt/Tv/releases/download/latest/vortrex-tv.apk`
+3. **Settings → System → Accessibility → Vortrex Home button & phone remote → On.**
+   This makes Home open Vortrex and powers the phone remote.
 
-To go back to the stock home screen, run `./uninstall-launcher.sh 192.168.0.169`
+To go back to Google TV, turn that Accessibility option off.
 
 ---
 

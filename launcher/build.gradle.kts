@@ -11,8 +11,8 @@ android {
         applicationId = "com.tv.launcher"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
     }
 
     buildTypes {
@@ -35,5 +35,5 @@ android {
 }
 
 dependencies {
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("com.google.zxing:core:3.5.3")
 }

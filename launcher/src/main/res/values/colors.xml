@@ -1,8 +1,13 @@
 <resources>
-    <color name="bg_top">#FF10131C</color>
-    <color name="bg_bottom">#FF05060A</color>
-    <color name="tile">#FF1E2230</color>
-    <color name="accent">#FF7AA7FF</color>
-    <color name="text">#FFF2F4F8</color>
-    <color name="text_dim">#FF8A90A2</color>
+    <color name="bg_top">#FF0B0D1A</color>
+    <color name="bg_bottom">#FF030308</color>
+    <color name="glow_violet">#557C4DFF</color>
+    <color name="glow_blue">#4430A8FF</color>
+    <color name="card">#1AFFFFFF</color>
+    <color name="card_stroke">#22FFFFFF</color>
+    <color name="accent">#FFB9A6FF</color>
+    <color name="text">#FFF5F5FA</color>
+    <color name="text_dim">#99F5F5FA</color>
+    <color name="netflix">#FFE50914</color>
+    <color name="youtube">#FFFF0033</color>
 </resources>
