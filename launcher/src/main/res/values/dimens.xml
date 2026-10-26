@@ -1,0 +1,5 @@
+<resources>
+    <!-- 160dp tile + 8dp margin on each side. -->
+    <dimen name="tile_with_margin">176dp</dimen>
+    <dimen name="screen_padding">48dp</dimen>
+</resources>

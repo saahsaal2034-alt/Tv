@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">TV Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="all_apps">All apps</string>
+    <string name="settings">Settings</string>
+    <string name="pin">Add to favorites</string>
+    <string name="unpin">Remove from favorites</string>
+    <string name="move_left">Move left</string>
+    <string name="move_right">Move right</string>
+    <string name="hide">Hide app</string>
+    <string name="app_info">App info</string>
+    <string name="show_hidden">Show hidden apps</string>
+    <string name="tv_settings">TV settings</string>
+    <string name="network_settings">Network settings</string>
+    <string name="favorites_empty">Hold OK on any app to add it here</string>
+</resources>

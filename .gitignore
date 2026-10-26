@@ -1,1 +1,5 @@
 .disabled-packages
+.gradle/
+build/
+local.properties
+*.jks
