@@ -1,0 +1,8 @@
+# Apps to disable (one package name per line). Disabled apps stop running
+# in the background but are NOT deleted; ./restore.sh turns them back on.
+# Run ./list-apps.sh to see what is installed, then uncomment or add lines.
+# Never disable the launcher, Play Store, or Google Play services.
+
+# com.netflix.ninja
+# com.amazon.amazonvideo.livingroom
+# com.disney.disneyplus
