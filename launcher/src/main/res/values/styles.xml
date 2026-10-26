@@ -1,0 +1,15 @@
+<resources>
+    <style name="Tab">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/tab</item>
+        <item name="android:focusable">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:textColor">@drawable/tab_text</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+</resources>

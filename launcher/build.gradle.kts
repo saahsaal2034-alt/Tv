@@ -35,5 +35,6 @@ android {
 }
 
 dependencies {
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.zxing:core:3.5.3")
 }

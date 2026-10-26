@@ -1,9 +1,12 @@
 # Xiaomi Google TV optimizer
 
 ## Custom home screen (Vortrex TV)
-`launcher/` replaces the Google TV home screen with a minimal one:
-- A big clock and date
-- Two tiles: **Netflix** and **YouTube**
+`launcher/` replaces the Google TV home screen with a minimal one, with three tabs:
+- **Home:** a big clock, **Netflix** and **YouTube**, and the phone remote QR code
+- **Apps:** every other app in a clean grid
+- **Settings:** Wi-Fi, Display & Sound, Accessibility, and all settings
+
+On the Home tab:
 - A **QR code**: scan it with your phone camera to get a remote on your phone
   (arrows, OK, back, home, play/pause, volume, and Netflix/YouTube shortcuts).
   The phone must be on the same Wi-Fi as the TV.
