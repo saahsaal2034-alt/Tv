@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -66,6 +68,7 @@ class MainActivity : Activity() {
         }
         setUpApps()
         setUpSettings()
+        goldText(findViewById(R.id.brand))
 
         // Moving onto a tab shows its page.
         tabs.forEachIndexed { index, tab ->
@@ -115,6 +118,18 @@ class MainActivity : Activity() {
         tabs.forEachIndexed { i, tab -> tab.isSelected = i == index }
         panels.forEachIndexed { i, panel -> panel.visibility = if (i == index) View.VISIBLE else View.GONE }
         smallClock.visibility = if (index == 0) View.INVISIBLE else View.VISIBLE
+    }
+
+    /** Paints text with a polished gold gradient. */
+    private fun goldText(view: TextView) {
+        view.post {
+            view.paint.shader = LinearGradient(
+                0f, 0f, view.width.toFloat(), view.height.toFloat(),
+                intArrayOf(getColor(R.color.gold_light), getColor(R.color.accent), getColor(R.color.gold_dark)),
+                null, Shader.TileMode.CLAMP,
+            )
+            view.invalidate()
+        }
     }
 
     private fun setUpTile(tileId: Int, pkg: String): View {
@@ -188,7 +203,7 @@ class MainActivity : Activity() {
     private fun qrCode(text: String, size: Int): Bitmap {
         val matrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, mapOf(EncodeHintType.MARGIN to 0))
         val pixels = IntArray(size * size) { i ->
-            if (matrix[i % size, i / size]) Color.BLACK else Color.WHITE
+            if (matrix[i % size, i / size]) Color.BLACK else Color.TRANSPARENT
         }
         return Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888)
     }

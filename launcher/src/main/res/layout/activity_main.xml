@@ -11,7 +11,7 @@
         android:layout_gravity="top|start"
         android:layout_marginStart="-300dp"
         android:layout_marginTop="-360dp"
-        android:background="@drawable/glow_violet" />
+        android:background="@drawable/glow_gold" />
 
     <View
         android:layout_width="640dp"
@@ -19,7 +19,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="-260dp"
         android:layout_marginBottom="-320dp"
-        android:background="@drawable/glow_blue" />
+        android:background="@drawable/glow_warm" />
 
     <!-- Top bar: brand, tabs, small clock. -->
     <FrameLayout
@@ -30,14 +30,15 @@
         android:layout_marginEnd="56dp">
 
         <TextView
+            android:id="@+id/brand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.45"
+            android:fontFamily="serif"
+            android:letterSpacing="0.35"
             android:text="@string/brand"
             android:textColor="@color/accent"
-            android:textSize="15sp" />
+            android:textSize="20sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -103,20 +104,28 @@
                 android:textColor="@color/text"
                 android:textSize="104sp" />
 
+            <View
+                android:layout_width="160dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/gold_line" />
+
             <TextClock
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
+                android:layout_marginTop="12dp"
                 android:format12Hour="EEEE · d MMMM"
                 android:format24Hour="EEEE · d MMMM"
-                android:letterSpacing="0.08"
-                android:textColor="@color/text_dim"
-                android:textSize="17sp" />
+                android:letterSpacing="0.25"
+                android:textAllCaps="true"
+                android:textColor="@color/gold_dim"
+                android:textSize="14sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="36dp"
                 android:clipChildren="false"
                 android:orientation="horizontal">
 
@@ -202,9 +211,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.25"
                 android:text="@string/remote_title"
-                android:textColor="@color/text"
-                android:textSize="17sp" />
+                android:textAllCaps="true"
+                android:textColor="@color/accent"
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/remote_hint"

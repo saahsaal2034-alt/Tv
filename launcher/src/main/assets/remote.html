@@ -5,24 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#06060c">
+<meta name="theme-color" content="#000000">
 <title>Vortrex Remote</title>
 <style>
   :root {
-    --bg: #06060c;
-    --glass: rgba(255,255,255,0.07);
-    --glass-hi: rgba(255,255,255,0.16);
-    --stroke: rgba(255,255,255,0.10);
-    --text: #f5f5fa;
-    --dim: rgba(245,245,250,0.55);
-    --accent: #b9a6ff;
+    --bg: #000;
+    --glass: rgba(255,244,220,0.05);
+    --glass-hi: rgba(212,175,55,0.18);
+    --stroke: rgba(212,175,55,0.25);
+    --text: #f4eee0;
+    --dim: rgba(244,238,224,0.55);
+    --accent: #d4af37;
+    --gold: linear-gradient(135deg, #f3dd9b 0%, #d4af37 50%, #a47c2c 100%);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; }
   body {
     background:
-      radial-gradient(60vmax 60vmax at -10% -10%, rgba(124,77,255,0.33), transparent 60%),
-      radial-gradient(55vmax 55vmax at 110% 110%, rgba(48,168,255,0.25), transparent 60%),
+      radial-gradient(60vmax 60vmax at -10% -10%, rgba(201,162,74,0.22), transparent 60%),
+      radial-gradient(55vmax 55vmax at 110% 110%, rgba(160,116,58,0.16), transparent 60%),
       var(--bg);
     color: var(--text);
     font: 500 16px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
@@ -32,9 +33,12 @@
     overflow: hidden;
   }
   header { width: 100%; max-width: 380px; display: flex; justify-content: space-between; align-items: center; }
-  .brand { letter-spacing: .45em; font-size: 13px; color: var(--accent); }
+  .brand {
+    font: 500 18px/1 "Didot", "Bodoni 72", "Playfair Display", Georgia, serif; letter-spacing: .35em;
+    background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .status { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
-  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #3ddc84; }
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
   .status.off::before { background: #ff5a5a; }
   main { flex: 1; width: 100%; max-width: 380px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
   button {
@@ -49,13 +53,15 @@
     background: var(--glass); border: 1px solid var(--stroke);
   }
   .pad button { position: absolute; background: transparent; border: 0; border-radius: 50%; width: 33%; height: 33%; }
-  .pad button:active { background: rgba(255,255,255,0.08); }
+  .pad button:active { background: rgba(212,175,55,0.12); }
+  .pad button svg { color: var(--accent); }
+  .pad .ok:active { background: var(--gold); filter: brightness(1.15); }
   .pad .up { top: 2%; left: 33.5%; } .pad .down { bottom: 2%; left: 33.5%; }
   .pad .left { left: 2%; top: 33.5%; } .pad .right { right: 2%; top: 33.5%; }
   .pad .ok {
     top: 31%; left: 31%; width: 38%; height: 38%;
-    background: rgba(255,255,255,0.12); border: 1px solid var(--stroke);
-    font-size: 17px; letter-spacing: .08em;
+    background: var(--gold); border: 0; color: #000; font-weight: 700;
+    font-size: 17px; letter-spacing: .12em; box-shadow: 0 0 32px rgba(212,175,55,0.25);
   }
   .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   #kbd-toggle { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: 15px; }
@@ -67,6 +73,7 @@
     font: inherit; font-size: 17px; outline: none;
   }
   .kbd input:focus { border-color: var(--accent); }
+  #go { background: var(--gold); color: #000; border: 0; }
   .kbd button { width: 72px; height: 56px; border-radius: 18px; font-weight: 600; }
   .notice {
     display: none; font-size: 13px; line-height: 1.4; color: var(--dim); text-align: center;

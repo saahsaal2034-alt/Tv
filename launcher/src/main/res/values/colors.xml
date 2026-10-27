@@ -1,13 +1,16 @@
 <resources>
-    <color name="bg_top">#FF0B0D1A</color>
-    <color name="bg_bottom">#FF030308</color>
-    <color name="glow_violet">#557C4DFF</color>
-    <color name="glow_blue">#4430A8FF</color>
-    <color name="card">#1AFFFFFF</color>
-    <color name="card_stroke">#22FFFFFF</color>
-    <color name="accent">#FFB9A6FF</color>
-    <color name="text">#FFF5F5FA</color>
-    <color name="text_dim">#99F5F5FA</color>
+    <color name="bg_top">#FF0C0B09</color>
+    <color name="bg_bottom">#FF000000</color>
+    <color name="glow_gold">#38C9A24A</color>
+    <color name="glow_warm">#22A0743A</color>
+    <color name="card">#0DFFF4DC</color>
+    <color name="card_stroke">#40D4AF37</color>
+    <color name="accent">#FFD4AF37</color>
+    <color name="gold_light">#FFF3DD9B</color>
+    <color name="gold_dark">#FFA47C2C</color>
+    <color name="gold_dim">#FFB39B6B</color>
+    <color name="text">#FFF4EEE0</color>
+    <color name="text_dim">#99F4EEE0</color>
     <color name="netflix">#FFE50914</color>
     <color name="youtube">#FFFF0033</color>
 </resources>
