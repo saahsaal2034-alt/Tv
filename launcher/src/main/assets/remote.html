@@ -19,7 +19,8 @@
     --gold: linear-gradient(135deg, #f3dd9b 0%, #d4af37 50%, #a47c2c 100%);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; }
+  html { height: 100%; }
   body {
     background:
       radial-gradient(60vmax 60vmax at -10% -10%, rgba(201,162,74,0.22), transparent 60%),
@@ -30,7 +31,7 @@
     display: flex; flex-direction: column; align-items: center;
     padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
     user-select: none; -webkit-user-select: none; touch-action: manipulation;
-    overflow: hidden;
+    overflow-x: hidden; min-height: 100%;
   }
   header { width: 100%; max-width: 380px; display: flex; justify-content: space-between; align-items: center; }
   .brand {
@@ -40,7 +41,8 @@
   .status { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
   .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
   .status.off::before { background: #ff5a5a; }
-  main { flex: 1; width: 100%; max-width: 380px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+  /* Centred when it fits, scrolls from the top when it doesn't. */
+  main { margin: auto 0; padding-top: 20px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 28px; }
   button {
     font: inherit; color: var(--text); background: var(--glass); border: 1px solid var(--stroke);
     border-radius: 20px; height: 60px; display: grid; place-items: center; cursor: pointer;
@@ -80,6 +82,21 @@
     padding: 12px 16px; border-radius: 16px; background: var(--glass); border: 1px solid var(--stroke);
   }
   .notice.show { display: block; }
+  .pair { display: none; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px;
+    background: var(--glass); border: 1px solid var(--stroke); text-align: center; }
+  .pair.show { display: flex; }
+  .pair h2 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--accent); letter-spacing: .04em; }
+  .pair p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--dim); }
+  .pair .gold-btn { background: var(--gold); color: #000; border: 0; font-weight: 700; height: 52px; }
+  .pair input {
+    height: 52px; border-radius: 16px; background: rgba(0,0,0,.4); border: 1px solid var(--stroke);
+    color: var(--text); font: 600 22px/1 ui-monospace, Menlo, monospace; letter-spacing: .35em; text-align: center;
+    text-transform: uppercase; outline: none;
+  }
+  .pair .code { display: none; gap: 10px; flex-direction: column; }
+  .pair.asking .code { display: flex; }
+  .pair.asking #pair-start { display: none; }
+  .pair .err { color: #ff8a7a; }
   .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .netflix { color: #e50914; font: 800 20px/1 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .02em; }
   .youtube { display: flex; gap: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
@@ -94,7 +111,16 @@
 </header>
 
 <main>
-  <div class="notice" id="notice">Arrows, OK, Back and typing need one more step on the TV: turn on <b>Vortrex</b> in Settings → System → Accessibility.</div>
+  <div class="pair" id="pair">
+    <h2>Make the arrows work everywhere</h2>
+    <p id="pair-text">Pair once so the remote works in Netflix, YouTube and every other app.</p>
+    <button class="gold-btn" id="pair-start">Pair with TV</button>
+    <div class="code">
+      <input id="pair-code" maxlength="6" placeholder="······" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text">
+      <button class="gold-btn" id="pair-finish">Pair</button>
+    </div>
+  </div>
+  <div class="notice" id="notice">So Home always opens Vortrex, turn on <b>Vortrex</b> in Settings → System → Accessibility on the TV.</div>
   <div class="pad">
     <button class="up" data-c="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
     <button class="left" data-c="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -168,8 +194,44 @@
   // Ask the TV whether the arrows and keyboard are available.
   fetch("/s?k=" + encodeURIComponent(key))
     .then(r => r.json())
-    .then(s => { setOnline(true); document.getElementById("notice").classList.toggle("show", !s.full); })
+    .then(s => {
+      setOnline(true);
+      document.getElementById("notice").classList.toggle("show", !s.full);
+      document.getElementById("pair").classList.toggle("show", !s.paired);
+    })
     .catch(() => setOnline(false));
+
+  // Pairing with the TV's remote service: the TV shows a code, typed in here.
+  const pair = document.getElementById("pair");
+  const pairText = document.getElementById("pair-text");
+  const pairCode = document.getElementById("pair-code");
+  function pairStep(query) {
+    return fetch("/pair?k=" + encodeURIComponent(key) + "&" + query).then(r => r.json());
+  }
+  function pairMessage(text, error) {
+    pairText.textContent = text;
+    pairText.classList.toggle("err", !!error);
+  }
+  document.getElementById("pair-start").addEventListener("click", () => {
+    pairMessage("Connecting to the TV…");
+    pairStep("step=start").then(r => {
+      if (!r.ok) return pairMessage(r.error, true);
+      pair.classList.add("asking");
+      pairMessage("Type the code shown on the TV.");
+      pairCode.value = "";
+      pairCode.focus();
+    }).catch(() => pairMessage("Couldn't reach the TV. Is it on the same Wi-Fi?", true));
+  });
+  document.getElementById("pair-finish").addEventListener("click", () => {
+    pairMessage("Pairing…");
+    pairStep("step=code&t=" + encodeURIComponent(pairCode.value)).then(r => {
+      if (!r.ok) return pairMessage(r.error, true);
+      pairMessage("Paired! The remote now works in every app.");
+      pair.classList.remove("asking");
+      document.getElementById("pair-start").style.display = "none";
+      setTimeout(() => pair.classList.remove("show"), 2500);
+    }).catch(() => pairMessage("Couldn't reach the TV. Try again.", true));
+  });
 
   // Keyboard: whatever is typed here replaces the text in the TV's search box.
   const kbd = document.getElementById("kbd");
@@ -177,7 +239,7 @@
   let typing;
   document.getElementById("kbd-toggle").addEventListener("click", () => {
     kbd.classList.toggle("open");
-    if (kbd.classList.contains("open")) { input.value = ""; input.focus(); }
+    if (kbd.classList.contains("open")) { input.value = ""; input.focus(); send("typestart"); }
   });
   input.addEventListener("input", () => {
     clearTimeout(typing);

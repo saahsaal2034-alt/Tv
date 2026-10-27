@@ -11,7 +11,26 @@ import android.view.KeyEvent
  */
 object RemoteCommands {
 
+    // Android key codes for the TV remote service.
+    private val keys = mapOf(
+        "up" to KeyEvent.KEYCODE_DPAD_UP, "down" to KeyEvent.KEYCODE_DPAD_DOWN,
+        "left" to KeyEvent.KEYCODE_DPAD_LEFT, "right" to KeyEvent.KEYCODE_DPAD_RIGHT,
+        "ok" to KeyEvent.KEYCODE_DPAD_CENTER, "back" to KeyEvent.KEYCODE_BACK,
+        "enter" to KeyEvent.KEYCODE_ENTER, "playpause" to KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+        "volup" to KeyEvent.KEYCODE_VOLUME_UP, "voldown" to KeyEvent.KEYCODE_VOLUME_DOWN,
+        "mute" to KeyEvent.KEYCODE_VOLUME_MUTE,
+    )
+
     fun run(context: Context, command: String, text: String?) {
+        // Once paired, the TV's own remote service works in every app.
+        if (AtvRemote.paired) {
+            when (command) {
+                "type" -> return AtvRemote.type(text.orEmpty())
+                "typestart" -> return AtvRemote.startTyping()
+                else -> keys[command]?.let { return AtvRemote.key(it) }
+            }
+        }
+        if (command == "typestart") return
         if (HomeButtonService.instance?.run(command, text) == true) return
         val audio = context.getSystemService(AudioManager::class.java)
         when (command) {

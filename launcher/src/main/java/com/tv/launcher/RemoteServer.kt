@@ -29,6 +29,7 @@ object RemoteServer {
     fun start(context: Context, onCommand: (command: String, text: String?) -> Unit) {
         if (running) return
         val appContext = context.applicationContext
+        AtvRemote.init(appContext)
         val key = key(appContext)
         val page = appContext.assets.open("remote.html").use { it.readBytes() }
         val socket = try {
@@ -76,7 +77,19 @@ object RemoteServer {
                 path == "/" -> respond(out, "200 OK", "text/html; charset=utf-8", page)
                 path == "/s" -> {
                     val full = HomeButtonService.instance != null
-                    respond(out, "200 OK", "application/json", "{\"full\":$full}".toByteArray())
+                    val json = "{\"full\":$full,\"paired\":${AtvRemote.paired}}"
+                    respond(out, "200 OK", "application/json", json.toByteArray())
+                }
+                path == "/pair" -> {
+                    // Pairing talks to the TV over the network, so it runs here, off the main thread.
+                    val error = try {
+                        if (query["step"] == "code") AtvRemote.finishPairing(query["t"].orEmpty()) else AtvRemote.startPairing()
+                        null
+                    } catch (e: Exception) {
+                        e.message ?: "Pairing failed"
+                    }
+                    val json = if (error == null) "{\"ok\":true}" else "{\"ok\":false,\"error\":\"${error.replace("\"", "'")}\"}"
+                    respond(out, "200 OK", "application/json", json.toByteArray())
                 }
                 path == "/k" -> {
                     query["c"]?.let { onCommand(it, query["t"]) }
