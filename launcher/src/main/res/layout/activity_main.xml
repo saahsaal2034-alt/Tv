@@ -6,6 +6,7 @@
 
     <!-- Black and gold city at night, darkened on the left behind the clock. -->
     <ImageView
+        android:id="@+id/bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:importantForAccessibility="no"
@@ -30,11 +31,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center_vertical"
-            android:fontFamily="serif"
-            android:letterSpacing="0.35"
+            android:fontFamily="@font/cinzel"
+            android:letterSpacing="0.3"
             android:text="@string/brand"
             android:textColor="@color/accent"
-            android:textSize="20sp" />
+            android:textSize="22sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -65,10 +66,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|center_vertical"
+            android:fontFamily="@font/cormorant_medium"
             android:format12Hour="h:mm"
             android:format24Hour="HH:mm"
-            android:textColor="@color/text"
-            android:textSize="18sp"
+            android:textColor="@color/accent"
+            android:textSize="26sp"
             android:visibility="invisible" />
     </FrameLayout>
 
@@ -91,37 +93,42 @@
             android:orientation="vertical">
 
             <TextClock
+                android:id="@+id/clock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-thin"
+                android:fontFamily="@font/cormorant_light"
                 android:format12Hour="h:mm"
                 android:format24Hour="HH:mm"
                 android:includeFontPadding="false"
-                android:textColor="@color/text"
-                android:textSize="104sp" />
+                android:textColor="@color/accent"
+                android:textSize="132sp" />
 
             <View
+                android:id="@+id/gold_line"
                 android:layout_width="160dp"
                 android:layout_height="1dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="4dp"
                 android:background="@drawable/gold_line" />
 
             <TextClock
+                android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_marginTop="12dp"
+                android:fontFamily="@font/cormorant_medium"
                 android:format12Hour="EEEE · d MMMM"
                 android:format24Hour="EEEE · d MMMM"
-                android:letterSpacing="0.25"
+                android:letterSpacing="0.22"
                 android:textAllCaps="true"
                 android:textColor="@color/gold_dim"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
 
             <LinearLayout
+                android:id="@+id/tiles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
+                android:layout_marginTop="32dp"
                 android:clipChildren="false"
                 android:orientation="horizontal">
 
@@ -206,8 +213,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.25"
+                android:fontFamily="@font/cinzel"
+                android:letterSpacing="0.2"
                 android:text="@string/remote_title"
                 android:textAllCaps="true"
                 android:textColor="@color/accent"

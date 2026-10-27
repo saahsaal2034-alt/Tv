@@ -6,8 +6,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -68,7 +66,9 @@ class MainActivity : Activity() {
         }
         setUpApps()
         setUpSettings()
-        goldText(findViewById(R.id.brand))
+        goldShimmer(findViewById(R.id.brand))
+        goldShimmer(findViewById(R.id.clock))
+        kenBurns(findViewById(R.id.bg))
 
         // Moving onto a tab shows its page.
         tabs.forEachIndexed { index, tab ->
@@ -85,6 +85,7 @@ class MainActivity : Activity() {
 
         selectTab(0)
         netflix.requestFocus()
+        playHomeEntrance()
     }
 
     override fun onResume() {
@@ -114,23 +115,36 @@ class MainActivity : Activity() {
 
     private fun selectTab(index: Int) {
         if (index == 1 && selectedTab != 1) loadApps()
+        val changed = index != selectedTab
         selectedTab = index
         tabs.forEachIndexed { i, tab -> tab.isSelected = i == index }
         panels.forEachIndexed { i, panel -> panel.visibility = if (i == index) View.VISIBLE else View.GONE }
         smallClock.visibility = if (index == 0) View.INVISIBLE else View.VISIBLE
-    }
-
-    /** Paints text with a polished gold gradient. */
-    private fun goldText(view: TextView) {
-        view.post {
-            view.paint.shader = LinearGradient(
-                0f, 0f, view.width.toFloat(), view.height.toFloat(),
-                intArrayOf(getColor(R.color.gold_light), getColor(R.color.accent), getColor(R.color.gold_dark)),
-                null, Shader.TileMode.CLAMP,
-            )
-            view.invalidate()
+        if (!changed) return
+        if (index == 0) {
+            playHomeEntrance()
+        } else {
+            // Other pages fade up into place.
+            panels[index].apply {
+                alpha = 0f
+                translationY = dp(18f)
+                animate().alpha(1f).translationY(0f).setDuration(280).start()
+            }
         }
     }
+
+    private fun playHomeEntrance() {
+        val tiles = findViewById<ViewGroup>(R.id.tiles)
+        entrance(
+            listOf(
+                findViewById(R.id.clock), findViewById(R.id.gold_line), findViewById(R.id.date),
+                tiles.getChildAt(0), tiles.getChildAt(1), findViewById(R.id.remote_card),
+            ),
+            dp(24f),
+        )
+    }
+
+    private fun dp(value: Float): Float = value * resources.displayMetrics.density
 
     private fun setUpTile(tileId: Int, pkg: String): View {
         val tile = findViewById<View>(tileId)

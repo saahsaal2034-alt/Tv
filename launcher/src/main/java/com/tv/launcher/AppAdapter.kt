@@ -44,10 +44,3 @@ class AppAdapter(private val onClick: (App) -> Unit) : RecyclerView.Adapter<AppA
         }
     }
 }
-
-/** Gently enlarges a tile while it has focus. */
-fun focusZoom(view: View, hasFocus: Boolean) {
-    val scale = if (hasFocus) 1.08f else 1f
-    view.animate().scaleX(scale).scaleY(scale).translationZ(if (hasFocus) 24f else 0f)
-        .setDuration(160).start()
-}

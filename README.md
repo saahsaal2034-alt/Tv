@@ -56,3 +56,8 @@ Undo everything with `./restore.sh 192.168.0.169`.
 - Turn **MEMC** off. It causes the "soap opera" look.
 - For gaming, turn **Game mode** / **ALLM** on to cut input lag.
 - **Settings → Inputs → HDMI EDID version**: set it to **2.0** (or Auto) for the HDMI port your 4K/HDR devices use.
+
+## Credits
+Fonts: [Cinzel](https://fonts.google.com/specimen/Cinzel) and
+[Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond),
+both under the SIL Open Font License.
