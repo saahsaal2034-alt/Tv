@@ -10,13 +10,16 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
- * Sends the remote's Home button to this launcher, and lets the phone remote
- * press the D-pad, Back and type anywhere on the TV.
+ * Keeps this launcher as the TV's home screen (on start-up, on Home, and
+ * whenever the stock home screen appears), and lets the phone remote press
+ * the D-pad, Back and type anywhere on the TV.
  */
 class HomeButtonService : AccessibilityService() {
 
+    // Also runs when the TV starts up, so Vortrex opens instead of Google TV.
     override fun onServiceConnected() {
         instance = this
+        RemoteCommands.openHome(this)
     }
 
     override fun onDestroy() {
@@ -30,7 +33,14 @@ class HomeButtonService : AccessibilityService() {
         return true
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) = Unit
+    // Whenever the stock home screen comes up, replace it with Vortrex.
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+            event.packageName?.toString() in STOCK_LAUNCHERS
+        ) {
+            RemoteCommands.openHome(this)
+        }
+    }
 
     override fun onInterrupt() = Unit
 
@@ -135,6 +145,12 @@ class HomeButtonService : AccessibilityService() {
     }
 
     companion object {
+        private val STOCK_LAUNCHERS = setOf(
+            "com.google.android.apps.tv.launcherx", // Google TV
+            "com.google.android.tvlauncher", // Android TV
+            "com.google.android.leanbacklauncher", // Older Android TV
+        )
+
         @Volatile
         var instance: HomeButtonService? = null
             private set
