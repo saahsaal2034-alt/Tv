@@ -149,6 +149,7 @@
   .pair.asking .code { display: flex; }
   .pair.asking #pair-start { display: none; }
   .err { color: #ff8a7a !important; }
+  .details { font: 11px/1.5 ui-monospace, Menlo, monospace; color: var(--dim); text-align: left; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.35); user-select: text; -webkit-user-select: text; }
   .close { position: absolute; top: 10px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: transparent; color: var(--dim); font-size: 18px; }
   .tip { position: relative; }
 
@@ -204,6 +205,7 @@
       <h2>Unlock full control</h2>
       <p id="pair-text">Pair once so the remote works in Netflix, YouTube and every other app.</p>
       <button class="gold-btn" id="pair-start">Pair with TV</button>
+      <div class="details" id="details"></div>
       <div class="code">
         <input id="pair-code" maxlength="6" placeholder="······" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
         <button class="gold-btn" id="pair-finish">Pair</button>
@@ -430,6 +432,16 @@
         $("pair-start").style.display = "";
       }
       $("pair").classList.toggle("show", !s.paired || !!broken);
+      // Technical details to screenshot when something isn't working.
+      const versions = { 30: "11", 31: "12", 32: "12L", 33: "13", 34: "14", 35: "15", 36: "16" };
+      $("details").textContent =
+        "Android " + (versions[s.android] || s.android) +
+        " · paired: " + (s.paired ? "yes" : "no") +
+        " · full: " + (s.live ? "yes" : "no") +
+        (s.err ? "\nWhy: " + s.err : "") +
+        "\nLast arrow: " + (s.nav || "none yet") +
+        " · accessibility: " + (s.full ? "on" : "off");
+      $("details").style.whiteSpace = "pre-wrap";
       refreshTimer = setTimeout(refresh, s.paired && !s.live ? 4000 : 15000);
     }).catch(() => { setOnline(false); refreshTimer = setTimeout(refresh, 5000); });
   }

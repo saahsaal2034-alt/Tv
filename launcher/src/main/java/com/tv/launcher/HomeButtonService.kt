@@ -64,22 +64,33 @@ class HomeButtonService : AccessibilityService() {
     // hand: ask the app for the next item, and if it has no answer, pick the
     // nearest focusable item on screen in that direction.
     private fun move(globalAction: Int, direction: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && performGlobalAction(globalAction)) return
-        val focused = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
-        if (focused?.focusSearch(direction)?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && performGlobalAction(globalAction)) {
+            return report("pressed the D-pad")
+        }
+        val root = rootInActiveWindow ?: return report("can't see the screen (${Build.VERSION.SDK_INT})")
+        val app = root.packageName
+        val focused = findFocus(AccessibilityNodeInfo.FOCUS_INPUT) ?: root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+        if (focused?.focusSearch(direction)?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true) {
+            return report("moved in $app")
+        }
 
         val candidates = focusables()
         if (focused == null) {
-            candidates.firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
-            return
+            val ok = candidates.firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true
+            return report(if (ok) "focused first item in $app" else "nothing to focus in $app (${candidates.size} items)")
         }
         val from = Rect().also(focused::getBoundsInScreen)
-        candidates
+        val ok = candidates
             .map { it to Rect().also(it::getBoundsInScreen) }
             .filter { (_, bounds) -> bounds != from }
             .mapNotNull { (node, bounds) -> distance(from, bounds, direction)?.let { node to it } }
             .minByOrNull { it.second }
-            ?.first?.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+            ?.first?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true
+        report(if (ok) "moved by position in $app" else "couldn't move in $app (${candidates.size} items)")
+    }
+
+    private fun report(result: String) {
+        lastResult = result
     }
 
     private fun focusables(): List<AccessibilityNodeInfo> {
@@ -145,6 +156,11 @@ class HomeButtonService : AccessibilityService() {
     }
 
     companion object {
+        /** What the last arrow press did, for the phone to show. */
+        @Volatile
+        var lastResult: String? = null
+            private set
+
         private val STOCK_LAUNCHERS = setOf(
             "com.google.android.apps.tv.launcherx", // Google TV
             "com.google.android.tvlauncher", // Android TV

@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,13 @@ import java.util.Locale
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
+
+    companion object {
+        /** The home screen while it's showing, so the phone remote can drive it directly. */
+        @Volatile
+        var foreground: MainActivity? = null
+            private set
+    }
 
     private val executor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -90,8 +98,20 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        foreground = this
         updateRemote()
         if (selectedTab == 1) loadApps()
+    }
+
+    override fun onPause() {
+        if (foreground === this) foreground = null
+        super.onPause()
+    }
+
+    /** Presses a remote key on this screen, as if from the TV remote. */
+    fun pressKey(keyCode: Int) {
+        dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+        dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
     }
 
     override fun onDestroy() {

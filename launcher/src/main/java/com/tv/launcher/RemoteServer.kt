@@ -84,7 +84,9 @@ object RemoteServer {
                     val full = HomeButtonService.instance != null
                     if (AtvRemote.paired && !AtvRemote.connected) AtvRemote.warmUp()
                     val error = AtvRemote.lastError?.let(::jsonString) ?: "null"
-                    val json = "{\"full\":$full,\"paired\":${AtvRemote.paired},\"live\":${AtvRemote.connected},\"err\":$error}"
+                    val nav = HomeButtonService.lastResult?.let(::jsonString) ?: "null"
+                    val json = "{\"full\":$full,\"paired\":${AtvRemote.paired},\"live\":${AtvRemote.connected}," +
+                        "\"err\":$error,\"nav\":$nav,\"android\":${android.os.Build.VERSION.SDK_INT}}"
                     respond(out, "200 OK", "application/json", json.toByteArray())
                 }
                 path == "/pair" -> {

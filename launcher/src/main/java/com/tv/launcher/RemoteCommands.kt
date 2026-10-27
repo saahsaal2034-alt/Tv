@@ -43,6 +43,11 @@ object RemoteCommands {
 
     private fun runLocally(context: Context, command: String, text: String?) {
         if (command == "typestart") return
+        // On the Vortrex screen itself, press the key directly: always works.
+        val home = MainActivity.foreground
+        if (home != null && command in listOf("up", "down", "left", "right", "ok", "back")) {
+            return home.pressKey(keys.getValue(command))
+        }
         if (command == "launch") return Apps.launch(context, text.orEmpty())
         if (HomeButtonService.instance?.run(command, text) == true) return
         val audio = context.getSystemService(AudioManager::class.java)
