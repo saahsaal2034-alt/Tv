@@ -1,6 +1,7 @@
 package com.tv.launcher
 
 import android.accessibilityservice.AccessibilityService
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -49,11 +50,53 @@ class HomeButtonService : AccessibilityService() {
         return true
     }
 
-    // Android 13+ can press the D-pad directly; older versions move focus by hand.
+    // Android 13+ can press the D-pad directly. Older versions move focus by
+    // hand: ask the app for the next item, and if it has no answer, pick the
+    // nearest focusable item on screen in that direction.
     private fun move(globalAction: Int, direction: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && performGlobalAction(globalAction)) return
-        findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.focusSearch(direction)
-            ?.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+        val focused = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+        if (focused?.focusSearch(direction)?.performAction(AccessibilityNodeInfo.ACTION_FOCUS) == true) return
+
+        val candidates = focusables()
+        if (focused == null) {
+            candidates.firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+            return
+        }
+        val from = Rect().also(focused::getBoundsInScreen)
+        candidates
+            .map { it to Rect().also(it::getBoundsInScreen) }
+            .filter { (_, bounds) -> bounds != from }
+            .mapNotNull { (node, bounds) -> distance(from, bounds, direction)?.let { node to it } }
+            .minByOrNull { it.second }
+            ?.first?.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+    }
+
+    private fun focusables(): List<AccessibilityNodeInfo> {
+        val result = mutableListOf<AccessibilityNodeInfo>()
+        val queue = ArrayDeque<AccessibilityNodeInfo>()
+        rootInActiveWindow?.let(queue::add)
+        while (queue.isNotEmpty()) {
+            val node = queue.removeFirst()
+            if (node.isFocusable && node.isVisibleToUser && node.isEnabled) result += node
+            for (i in 0 until node.childCount) node.getChild(i)?.let(queue::add)
+        }
+        return result
+    }
+
+    /** How far [to] is from [from] in [direction], or null if it's the other way. */
+    private fun distance(from: Rect, to: Rect, direction: Int): Long? {
+        val dx = (to.centerX() - from.centerX()).toLong()
+        val dy = (to.centerY() - from.centerY()).toLong()
+        val (along, across) = when (direction) {
+            View.FOCUS_RIGHT -> dx to dy
+            View.FOCUS_LEFT -> -dx to dy
+            View.FOCUS_DOWN -> dy to dx
+            else -> -dy to dx
+        }
+        if (along <= 0) return null
+        // Prefer items straight ahead over ones off to the side.
+        return along * along + 4 * across * across
     }
 
     private fun select() {
