@@ -98,7 +98,7 @@ object RemoteServer {
                 }
                 path == "/apps" -> {
                     val json = Apps.all(context).joinToString(",", "[", "]") {
-                        "{\"p\":${jsonString(it.packageName)},\"n\":${jsonString(it.label)}}"
+                        "{\"p\":${jsonString(it.component.packageName)},\"n\":${jsonString(it.label)}}"
                     }
                     respond(out, "200 OK", "application/json", json.toByteArray())
                 }
