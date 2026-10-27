@@ -316,7 +316,7 @@
   }
 
   function setOnline(ok) {
-    status.textContent = ok ? "Connected" : "Offline";
+    if (!ok) status.textContent = "Offline";
     status.classList.toggle("off", !ok);
   }
 
@@ -415,14 +415,24 @@
   }
 
   // Status, pairing and the add-to-home-screen tip.
+  // Shows whether the TV's own remote service is connected ("Full control"),
+  // and why not if pairing worked but the connection didn't.
+  let refreshTimer;
   function refresh() {
+    clearTimeout(refreshTimer);
     fetch("/s?" + q).then(r => r.json()).then(s => {
-      setOnline(true);
-      $("pair").classList.toggle("show", !s.paired);
-    }).catch(() => setOnline(false));
+      status.classList.remove("off");
+      status.textContent = s.paired && s.live ? "Full control" : s.paired ? "Connecting…" : "Basic control";
+      const broken = s.paired && !s.live && s.err;
+      if (broken) {
+        status.textContent = "Basic control";
+        pairMessage("Full control isn't connected: " + s.err + ". Try pairing again.", true);
+        $("pair-start").style.display = "";
+      }
+      $("pair").classList.toggle("show", !s.paired || !!broken);
+      refreshTimer = setTimeout(refresh, s.paired && !s.live ? 4000 : 15000);
+    }).catch(() => { setOnline(false); refreshTimer = setTimeout(refresh, 5000); });
   }
-  refresh();
-  setInterval(refresh, 15000);
 
   let tipHidden = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
   try { tipHidden = tipHidden || localStorage.getItem("tip") === "1"; } catch (e) {}
@@ -451,7 +461,7 @@
       pair.classList.remove("asking");
       $("pair-start").style.display = "none";
       pairMessage("Paired! The remote now works in every app.");
-      setTimeout(() => pair.classList.remove("show"), 2500);
+      setTimeout(() => { pair.classList.remove("show"); refresh(); }, 2500);
     }).catch(() => pairMessage("Couldn't reach the TV. Try again.", true));
   });
 
@@ -472,6 +482,8 @@
   $("go").addEventListener("click", submit);
   $("clear").addEventListener("click", () => { input.value = ""; send("type", ""); input.focus(); });
   $("done").addEventListener("click", closeKeyboard);
+
+  refresh();
 </script>
 </body>
 </html>

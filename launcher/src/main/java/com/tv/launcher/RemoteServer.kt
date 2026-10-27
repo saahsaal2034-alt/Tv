@@ -82,7 +82,9 @@ object RemoteServer {
                 path == "/" -> respond(out, "200 OK", "text/html; charset=utf-8", page)
                 path == "/s" -> {
                     val full = HomeButtonService.instance != null
-                    val json = "{\"full\":$full,\"paired\":${AtvRemote.paired}}"
+                    if (AtvRemote.paired && !AtvRemote.connected) AtvRemote.warmUp()
+                    val error = AtvRemote.lastError?.let(::jsonString) ?: "null"
+                    val json = "{\"full\":$full,\"paired\":${AtvRemote.paired},\"live\":${AtvRemote.connected},\"err\":$error}"
                     respond(out, "200 OK", "application/json", json.toByteArray())
                 }
                 path == "/pair" -> {
@@ -161,7 +163,7 @@ object RemoteServer {
         return key
     }
 
-    private fun localIp(): String? =
+    fun localIp(): String? =
         NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
             .filter { it.isUp && !it.isLoopback }
             .flatMap { it.inetAddresses.toList() }

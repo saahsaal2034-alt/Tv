@@ -5,6 +5,7 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.math.BigInteger
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.security.KeyPairGenerator
 import java.security.KeyStore
@@ -46,6 +47,15 @@ object AtvRemote {
     @Volatile
     private var active = false
     private var typed = ""
+    private var lastFailure = 0L
+
+    /** Why the last connection to the TV's remote service failed, for the phone to show. */
+    @Volatile
+    var lastError: String? = null
+        private set
+
+    val connected: Boolean
+        get() = active
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -110,10 +120,15 @@ object AtvRemote {
 
     // Key presses.
 
-    fun key(keyCode: Int) = sender.execute { sendKey(keyCode) }
+    /** Presses a key; runs [fallback] instead if the TV's remote service can't be reached. */
+    fun key(keyCode: Int, fallback: () -> Unit) = sender.execute { if (!sendKey(keyCode)) fallback() }
+
+    /** Connects in the background so the first key press is quick. */
+    fun warmUp() = sender.execute { ensureConnected() }
 
     /** Types the phone's text by sending only what changed since last time. */
-    fun type(text: String) = sender.execute {
+    fun type(text: String, fallback: () -> Unit) = sender.execute {
+        if (!ensureConnected()) return@execute fallback()
         val next = text.lowercase()
         val common = typed.commonPrefixWith(next).length
         repeat(typed.length - common) { sendKey(67) } // Delete.
@@ -123,25 +138,30 @@ object AtvRemote {
 
     fun startTyping() = sender.execute { typed = "" }
 
-    private fun sendKey(keyCode: Int) {
-        if (!ensureConnected()) return
-        try {
+    private fun sendKey(keyCode: Int): Boolean {
+        if (!ensureConnected()) return false
+        return try {
             synchronized(lock) {
-                remoteSocket?.outputStream?.let { out ->
-                    writeFrame(out, proto { message(10) { int(1, keyCode.toLong()); int(2, 3) } }) // A short press.
-                }
+                val out = remoteSocket?.outputStream ?: return false
+                writeFrame(out, proto { message(10) { int(1, keyCode.toLong()); int(2, 3) } }) // A short press.
             }
+            true
         } catch (e: Exception) {
-            disconnect()
+            fail("Lost connection: ${e.message}")
+            false
         }
     }
 
     private fun ensureConnected(): Boolean {
         if (!paired) return false
+        if (active) return true
+        // Don't make every press wait while the service is unreachable.
+        if (remoteSocket == null && System.currentTimeMillis() - lastFailure < 10_000) return false
         if (remoteSocket == null) connect()
         // The TV accepts keys once it has marked us active.
         val deadline = System.currentTimeMillis() + 3000
         while (!active && remoteSocket != null && System.currentTimeMillis() < deadline) Thread.sleep(50)
+        if (!active) fail(lastError ?: "The TV didn't accept the remote")
         return active
     }
 
@@ -151,12 +171,15 @@ object AtvRemote {
         } catch (e: SSLHandshakeException) {
             // The TV no longer recognises us, so pair again.
             prefs().edit().putBoolean("paired", false).apply()
+            fail("The TV forgot the pairing: ${e.message}")
             return
         } catch (e: Exception) {
+            fail("Can't reach the TV's remote service: ${e.message}")
             return
         }
         remoteSocket = socket
         active = false
+        lastError = null
         thread(name = "atv-remote", isDaemon = true) {
             try {
                 val input = socket.inputStream
@@ -187,14 +210,19 @@ object AtvRemote {
                     }
                 }
             } catch (e: Exception) {
-                if (remoteSocket === socket) disconnect()
+                if (remoteSocket === socket) fail("The TV closed the connection: ${e.message}")
             }
         }
     }
 
-    private fun disconnect() {
+    private fun fail(reason: String) {
+        lastError = reason
+        lastFailure = System.currentTimeMillis()
         active = false
-        remoteSocket?.close()
+        try {
+            remoteSocket?.close()
+        } catch (e: Exception) {
+        }
         remoteSocket = null
     }
 
@@ -212,13 +240,25 @@ object AtvRemote {
 
     // TLS with our own certificate, which the TV remembers after pairing.
 
+    // Tries the TV itself first, then its Wi-Fi address, in case the service only listens there.
     private fun open(port: Int): SSLSocket {
         val context = SSLContext.getInstance("TLS")
         context.init(arrayOf(KeystoreKeyManager(keyStore())), arrayOf(TrustAnyTv), null)
-        return (context.socketFactory.createSocket(HOST, port) as SSLSocket).apply {
-            soTimeout = 0
-            startHandshake()
+        var error: Exception = IllegalStateException("No network")
+        for (host in listOfNotNull(HOST, RemoteServer.localIp())) {
+            try {
+                val tcp = Socket().apply { connect(InetSocketAddress(host, port), 2000) }
+                return (context.socketFactory.createSocket(tcp, host, port, true) as SSLSocket).apply {
+                    soTimeout = 0
+                    startHandshake()
+                }
+            } catch (e: SSLHandshakeException) {
+                throw e
+            } catch (e: Exception) {
+                error = e
+            }
         }
+        throw error
     }
 
     private fun keyStore(): KeyStore {

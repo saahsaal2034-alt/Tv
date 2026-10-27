@@ -3,6 +3,8 @@ package com.tv.launcher
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 
 /**
@@ -23,15 +25,23 @@ object RemoteCommands {
         "input" to KeyEvent.KEYCODE_TV_INPUT,
     )
 
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     fun run(context: Context, command: String, text: String?) {
-        // Once paired, the TV's own remote service works in every app.
+        // Once paired, the TV's own remote service works in every app. If it
+        // can't be reached, fall back to the accessibility service.
         if (AtvRemote.paired) {
+            val fallback = { mainHandler.post { runLocally(context, command, text) }; Unit }
             when (command) {
-                "type" -> return AtvRemote.type(text.orEmpty())
+                "type" -> return AtvRemote.type(text.orEmpty(), fallback)
                 "typestart" -> return AtvRemote.startTyping()
-                else -> keys[command]?.let { return AtvRemote.key(it) }
+                else -> keys[command]?.let { return AtvRemote.key(it, fallback) }
             }
         }
+        runLocally(context, command, text)
+    }
+
+    private fun runLocally(context: Context, command: String, text: String?) {
         if (command == "typestart") return
         if (command == "launch") return Apps.launch(context, text.orEmpty())
         if (HomeButtonService.instance?.run(command, text) == true) return
