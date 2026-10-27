@@ -4,22 +4,18 @@
     android:layout_height="match_parent"
     android:clipChildren="false">
 
-    <!-- Soft colour glows behind everything. -->
-    <View
-        android:layout_width="720dp"
-        android:layout_height="720dp"
-        android:layout_gravity="top|start"
-        android:layout_marginStart="-300dp"
-        android:layout_marginTop="-360dp"
-        android:background="@drawable/glow_gold" />
+    <!-- Black and gold city at night, darkened on the left behind the clock. -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_city" />
 
     <View
-        android:layout_width="640dp"
-        android:layout_height="640dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="-260dp"
-        android:layout_marginBottom="-320dp"
-        android:background="@drawable/glow_warm" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/shade" />
 
     <!-- Top bar: brand, tabs, small clock. -->
     <FrameLayout
