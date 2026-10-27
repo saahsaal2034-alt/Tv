@@ -1,6 +1,10 @@
 package com.tv.launcher
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import java.io.ByteArrayOutputStream
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStream
@@ -10,6 +14,7 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.URLDecoder
 import java.security.SecureRandom
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
 /**
@@ -46,7 +51,7 @@ object RemoteServer {
                 } catch (e: Exception) {
                     break
                 }
-                thread(isDaemon = true) { handle(client, key, page, onCommand) }
+                thread(isDaemon = true) { handle(appContext, client, key, page, onCommand) }
             }
         }
     }
@@ -60,7 +65,7 @@ object RemoteServer {
     /** The address the QR code points to, or null when the TV has no network. */
     fun url(context: Context): String? = localIp()?.let { "http://$it:$PORT/?k=${key(context)}" }
 
-    private fun handle(client: Socket, key: String, page: ByteArray, onCommand: (String, String?) -> Unit) {
+    private fun handle(context: Context, client: Socket, key: String, page: ByteArray, onCommand: (String, String?) -> Unit) {
         client.use {
             client.soTimeout = 5000
             val reader = BufferedReader(InputStreamReader(client.getInputStream()))
@@ -91,6 +96,24 @@ object RemoteServer {
                     val json = if (error == null) "{\"ok\":true}" else "{\"ok\":false,\"error\":\"${error.replace("\"", "'")}\"}"
                     respond(out, "200 OK", "application/json", json.toByteArray())
                 }
+                path == "/apps" -> {
+                    val json = Apps.all(context).joinToString(",", "[", "]") {
+                        "{\"p\":${jsonString(it.packageName)},\"n\":${jsonString(it.label)}}"
+                    }
+                    respond(out, "200 OK", "application/json", json.toByteArray())
+                }
+                path == "/icon" -> {
+                    val png = query["p"]?.let { iconPng(context, it) }
+                    if (png != null) respond(out, "200 OK", "image/png", png) else respond(out, "404 Not Found", "text/plain", ByteArray(0))
+                }
+                // Lets the remote be added to the phone's home screen as an app.
+                path == "/manifest.json" -> {
+                    val json = """{"name":"Vortrex Remote","short_name":"Vortrex","start_url":"/?k=$key",""" +
+                        """"display":"standalone","background_color":"#000000","theme_color":"#000000",""" +
+                        """"icons":[{"src":"/app-icon.png?k=$key","sizes":"512x512","type":"image/png"}]}"""
+                    respond(out, "200 OK", "application/manifest+json", json.toByteArray())
+                }
+                path == "/app-icon.png" -> respond(out, "200 OK", "image/png", context.assets.open("app-icon.png").use { it.readBytes() })
                 path == "/k" -> {
                     query["c"]?.let { onCommand(it, query["t"]) }
                     respond(out, "204 No Content", "text/plain", ByteArray(0))
@@ -99,6 +122,22 @@ object RemoteServer {
             }
         }
     }
+
+    private val icons = ConcurrentHashMap<String, ByteArray>()
+
+    private fun iconPng(context: Context, pkg: String): ByteArray? = icons[pkg] ?: try {
+        val icon = context.packageManager.getApplicationIcon(pkg)
+        val bitmap = Bitmap.createBitmap(144, 144, Bitmap.Config.ARGB_8888)
+        icon.setBounds(0, 0, 144, 144)
+        icon.draw(Canvas(bitmap))
+        ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+            .also { icons[pkg] = it }
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
+    }
+
+    private fun jsonString(text: String): String =
+        "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ") + "\""
 
     private fun respond(out: OutputStream, status: String, type: String, body: ByteArray) {
         val head = "HTTP/1.1 $status\r\nContent-Type: $type\r\nContent-Length: ${body.size}\r\n" +

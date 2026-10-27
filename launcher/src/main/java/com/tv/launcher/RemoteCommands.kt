@@ -18,7 +18,9 @@ object RemoteCommands {
         "ok" to KeyEvent.KEYCODE_DPAD_CENTER, "back" to KeyEvent.KEYCODE_BACK,
         "enter" to KeyEvent.KEYCODE_ENTER, "playpause" to KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
         "volup" to KeyEvent.KEYCODE_VOLUME_UP, "voldown" to KeyEvent.KEYCODE_VOLUME_DOWN,
-        "mute" to KeyEvent.KEYCODE_VOLUME_MUTE,
+        "mute" to KeyEvent.KEYCODE_VOLUME_MUTE, "rewind" to KeyEvent.KEYCODE_MEDIA_REWIND,
+        "ff" to KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, "power" to KeyEvent.KEYCODE_POWER,
+        "input" to KeyEvent.KEYCODE_TV_INPUT,
     )
 
     fun run(context: Context, command: String, text: String?) {
@@ -31,20 +33,25 @@ object RemoteCommands {
             }
         }
         if (command == "typestart") return
+        if (command == "launch") return Apps.launch(context, text.orEmpty())
         if (HomeButtonService.instance?.run(command, text) == true) return
         val audio = context.getSystemService(AudioManager::class.java)
         when (command) {
             "volup" -> audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
             "voldown" -> audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
             "mute" -> audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
-            "playpause" -> {
-                audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-                audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-            }
+            "playpause" -> mediaKey(audio, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            "rewind" -> mediaKey(audio, KeyEvent.KEYCODE_MEDIA_REWIND)
+            "ff" -> mediaKey(audio, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD)
             "netflix" -> Apps.launch(context, NETFLIX)
             "youtube" -> Apps.launch(context, YOUTUBE)
             "home" -> openHome(context)
         }
+    }
+
+    private fun mediaKey(audio: AudioManager, keyCode: Int) {
+        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
     }
 
     fun openHome(context: Context) {

@@ -4,185 +4,341 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vortrex">
 <meta name="theme-color" content="#000000">
+<link id="manifest" rel="manifest">
+<link id="touch-icon" rel="apple-touch-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
 <title>Vortrex Remote</title>
 <style>
   :root {
     --bg: #000;
     --glass: rgba(255,244,220,0.05);
-    --glass-hi: rgba(212,175,55,0.18);
-    --stroke: rgba(212,175,55,0.25);
+    --glass-hi: rgba(212,175,55,0.16);
+    --stroke: rgba(212,175,55,0.22);
     --text: #f4eee0;
     --dim: rgba(244,238,224,0.55);
     --accent: #d4af37;
     --gold: linear-gradient(135deg, #f3dd9b 0%, #d4af37 50%, #a47c2c 100%);
+    --serif: "Cinzel", "Didot", "Bodoni 72", Georgia, serif;
+    --tabbar: calc(64px + env(safe-area-inset-bottom));
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; }
-  html { height: 100%; }
+  html, body { margin: 0; height: 100%; }
   body {
     background:
-      radial-gradient(60vmax 60vmax at -10% -10%, rgba(201,162,74,0.22), transparent 60%),
-      radial-gradient(55vmax 55vmax at 110% 110%, rgba(160,116,58,0.16), transparent 60%),
+      radial-gradient(70vmax 50vmax at 0% 0%, rgba(201,162,74,0.18), transparent 60%),
+      radial-gradient(60vmax 50vmax at 100% 100%, rgba(160,116,58,0.12), transparent 60%),
       var(--bg);
     color: var(--text);
     font: 500 16px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
     user-select: none; -webkit-user-select: none; touch-action: manipulation;
-    overflow-x: hidden; min-height: 100%;
+    overflow: hidden;
   }
-  header { width: 100%; max-width: 380px; display: flex; justify-content: space-between; align-items: center; }
+  button {
+    font: inherit; color: var(--text); background: var(--glass); border: 1px solid var(--stroke);
+    border-radius: 20px; height: 60px; display: grid; place-items: center; cursor: pointer; padding: 0;
+    transition: transform .1s ease, background .15s ease, box-shadow .2s ease;
+  }
+  button:active, button.held { transform: scale(.93); background: var(--glass-hi); box-shadow: 0 0 24px rgba(212,175,55,.25); }
+  svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+    padding: max(14px, env(safe-area-inset-top)) 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(#000 60%, transparent);
+  }
   .brand {
-    font: 500 18px/1 "Didot", "Bodoni 72", "Playfair Display", Georgia, serif; letter-spacing: .35em;
+    flex: 1; font: 400 19px/1 var(--serif); letter-spacing: .32em;
     background: var(--gold); -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .status { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
-  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-  .status.off::before { background: #ff5a5a; }
-  /* Centred when it fits, scrolls from the top when it doesn't. */
-  main { margin: auto 0; padding-top: 20px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 28px; }
-  button {
-    font: inherit; color: var(--text); background: var(--glass); border: 1px solid var(--stroke);
-    border-radius: 20px; height: 60px; display: grid; place-items: center; cursor: pointer;
-    transition: transform .08s ease, background .08s ease;
+  .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .status.off::before { background: #ff5a5a; box-shadow: 0 0 8px #ff5a5a; }
+  .power { width: 42px; height: 42px; border-radius: 50%; color: #ff7a6a; border-color: rgba(255,122,106,.3); }
+  .power svg { width: 20px; height: 20px; }
+
+  /* Pages */
+  main {
+    position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: calc(max(14px, env(safe-area-inset-top)) + 64px) 16px calc(var(--tabbar) + 20px);
   }
-  button:active, button.held { transform: scale(.94); background: var(--glass-hi); }
-  button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .pad {
-    position: relative; width: min(78vw, 300px); aspect-ratio: 1; margin: 0 auto; border-radius: 50%;
-    background: var(--glass); border: 1px solid var(--stroke);
-  }
-  .pad button { position: absolute; background: transparent; border: 0; border-radius: 50%; width: 33%; height: 33%; }
-  .pad button:active { background: rgba(212,175,55,0.12); }
-  .pad button svg { color: var(--accent); }
-  .pad .ok:active { background: var(--gold); filter: brightness(1.15); }
-  .pad .up { top: 2%; left: 33.5%; } .pad .down { bottom: 2%; left: 33.5%; }
-  .pad .left { left: 2%; top: 33.5%; } .pad .right { right: 2%; top: 33.5%; }
-  .pad .ok {
-    top: 31%; left: 31%; width: 38%; height: 38%;
-    background: var(--gold); border: 0; color: #000; font-weight: 700;
-    font-size: 17px; letter-spacing: .12em; box-shadow: 0 0 32px rgba(212,175,55,0.25);
-  }
+  .view { display: none; max-width: 380px; margin: 0 auto; flex-direction: column; gap: 18px; animation: fade .28s ease; }
+  .view.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  #kbd-toggle { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: 15px; }
-  .kbd { display: none; gap: 10px; }
-  .kbd.open { display: flex; }
-  .kbd input {
-    flex: 1; min-width: 0; height: 56px; padding: 0 18px; border-radius: 18px;
-    background: var(--glass); border: 1px solid var(--stroke); color: var(--text);
-    font: inherit; font-size: 17px; outline: none;
+
+  /* D-pad */
+  .pad {
+    position: relative; width: min(80vw, 300px); aspect-ratio: 1; margin: 6px auto 4px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, rgba(255,244,220,.07), rgba(255,244,220,.02) 70%);
+    border: 1px solid var(--stroke);
+    box-shadow: inset 0 1px 0 rgba(255,244,220,.06), 0 20px 60px rgba(0,0,0,.6);
   }
-  .kbd input:focus { border-color: var(--accent); }
-  #go { background: var(--gold); color: #000; border: 0; }
-  .kbd button { width: 72px; height: 56px; border-radius: 18px; font-weight: 600; }
-  .notice {
-    display: none; font-size: 13px; line-height: 1.4; color: var(--dim); text-align: center;
-    padding: 12px 16px; border-radius: 16px; background: var(--glass); border: 1px solid var(--stroke);
+  .pad button { position: absolute; background: transparent; border: 0; border-radius: 50%; width: 33%; height: 33%; color: var(--accent); }
+  .pad button:active, .pad button.held { background: radial-gradient(circle, rgba(212,175,55,.22), transparent 70%); box-shadow: none; }
+  .pad .up { top: 1%; left: 33.5%; } .pad .down { bottom: 1%; left: 33.5%; }
+  .pad .left { left: 1%; top: 33.5%; } .pad .right { right: 1%; top: 33.5%; }
+  .pad .ok {
+    top: 30%; left: 30%; width: 40%; height: 40%; background: var(--gold); color: #000;
+    font: 600 18px/1 var(--serif); letter-spacing: .14em;
+    box-shadow: 0 0 40px rgba(212,175,55,.3), inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 8px rgba(0,0,0,.25);
   }
-  .notice.show { display: block; }
-  .pair { display: none; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px;
-    background: var(--glass); border: 1px solid var(--stroke); text-align: center; }
-  .pair.show { display: flex; }
-  .pair h2 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--accent); letter-spacing: .04em; }
-  .pair p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--dim); }
-  .pair .gold-btn { background: var(--gold); color: #000; border: 0; font-weight: 700; height: 52px; }
-  .pair input {
-    height: 52px; border-radius: 16px; background: rgba(0,0,0,.4); border: 1px solid var(--stroke);
-    color: var(--text); font: 600 22px/1 ui-monospace, Menlo, monospace; letter-spacing: .35em; text-align: center;
-    text-transform: uppercase; outline: none;
-  }
-  .pair .code { display: none; gap: 10px; flex-direction: column; }
-  .pair.asking .code { display: flex; }
-  .pair.asking #pair-start { display: none; }
-  .pair .err { color: #ff8a7a; }
+  .pad .ok:active, .pad .ok.held { background: var(--gold); filter: brightness(1.15); transform: scale(.94); box-shadow: 0 0 60px rgba(212,175,55,.5); }
+
+  /* Volume rocker */
+  .volume { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .volume .mute { width: 60px; border-radius: 50%; }
+  .label { font: 400 11px/1 var(--serif); letter-spacing: .3em; color: var(--dim); text-align: center; margin: 4px 0 -8px; }
+
+  /* App shortcuts */
   .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .netflix { color: #e50914; font: 800 20px/1 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .02em; }
   .youtube { display: flex; gap: 8px; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
   .youtube i { width: 26px; height: 18px; border-radius: 5px; background: #ff0033; position: relative; }
   .youtube i::after { content: ""; position: absolute; left: 10px; top: 5px; border-left: 8px solid #fff; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+
+  /* Touchpad */
+  .touch {
+    position: relative; height: min(56vh, 420px); border-radius: 28px; overflow: hidden; touch-action: none;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(212,175,55,.08), transparent 65%),
+      repeating-linear-gradient(0deg, rgba(212,175,55,.05) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(212,175,55,.05) 0 1px, transparent 1px 32px),
+      rgba(255,244,220,.03);
+    border: 1px solid var(--stroke);
+    display: grid; place-items: center;
+  }
+  .touch .hint { font: 400 12px/1.6 var(--serif); letter-spacing: .25em; color: var(--dim); text-align: center; pointer-events: none; }
+  .touch .dot {
+    position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(243,221,155,.55), rgba(212,175,55,.15) 50%, transparent 70%);
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .touch.on .dot { opacity: 1; }
+  .touch .tap { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 2px solid var(--accent); pointer-events: none; animation: tap .5s ease-out forwards; }
+  @keyframes tap { to { transform: scale(5); opacity: 0; } }
+
+  /* TV apps */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .app { height: auto; padding: 16px 6px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-radius: 22px; }
+  .app img { width: 56px; height: 56px; border-radius: 14px; object-fit: contain; }
+  .app span { font-size: 12px; color: var(--dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+  .skeleton { height: 110px; border-radius: 22px; background: linear-gradient(90deg, var(--glass) 25%, rgba(212,175,55,.08) 50%, var(--glass) 75%); background-size: 200% 100%; animation: shine 1.2s linear infinite; }
+  @keyframes shine { to { background-position: -200% 0; } }
+  .section-title { font: 400 12px/1 var(--serif); letter-spacing: .3em; color: var(--accent); margin: 4px 0 -4px 4px; }
+
+  /* Pairing and notices */
+  .card { display: none; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; background: var(--glass); border: 1px solid var(--stroke); text-align: center; }
+  .card.show { display: flex; }
+  .card h2 { margin: 0; font: 600 14px/1.3 var(--serif); letter-spacing: .12em; color: var(--accent); }
+  .card p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--dim); }
+  .gold-btn { background: var(--gold); color: #000; border: 0; font-weight: 700; height: 52px; }
+  .card input {
+    height: 56px; border-radius: 16px; background: rgba(0,0,0,.45); border: 1px solid var(--stroke);
+    color: var(--text); font: 600 24px/1 ui-monospace, Menlo, monospace; letter-spacing: .4em; text-align: center;
+    text-transform: uppercase; outline: none; width: 100%;
+  }
+  .card input:focus { border-color: var(--accent); }
+  .pair .code { display: none; gap: 10px; flex-direction: column; }
+  .pair.asking .code { display: flex; }
+  .pair.asking #pair-start { display: none; }
+  .err { color: #ff8a7a !important; }
+  .close { position: absolute; top: 10px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: transparent; color: var(--dim); font-size: 18px; }
+  .tip { position: relative; }
+
+  /* Tab bar */
+  nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; height: var(--tabbar);
+    padding: 8px 24px env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(3, 1fr);
+    background: rgba(8,7,6,.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--stroke);
+  }
+  nav button { background: transparent; border: 0; height: 48px; display: flex; flex-direction: column; gap: 4px; color: var(--dim); font-size: 10px; letter-spacing: .08em; }
+  nav button:active { background: transparent; box-shadow: none; }
+  nav button.active { color: var(--accent); }
+  nav button.active svg { filter: drop-shadow(0 0 6px rgba(212,175,55,.6)); }
+
+  /* Keyboard sheet */
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+    background: #0c0b09; border-top: 1px solid var(--stroke); border-radius: 26px 26px 0 0;
+    transform: translateY(110%); transition: transform .32s cubic-bezier(.2,.8,.2,1);
+    display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -20px 60px rgba(0,0,0,.6);
+  }
+  .sheet.open { transform: none; }
+  .sheet .bar { width: 40px; height: 4px; border-radius: 2px; background: var(--stroke); margin: -6px auto 4px; }
+  .sheet .line { display: flex; gap: 10px; }
+  .sheet input {
+    flex: 1; min-width: 0; height: 56px; padding: 0 18px; border-radius: 18px;
+    background: var(--glass); border: 1px solid var(--stroke); color: var(--text); font: inherit; font-size: 17px; outline: none;
+  }
+  .sheet input:focus { border-color: var(--accent); }
+  .sheet .go { width: 76px; height: 56px; border-radius: 18px; }
+  .sheet .keys { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sheet .keys button { height: 48px; font-size: 14px; color: var(--dim); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(var(--tabbar) + 16px); z-index: 20; transform: translate(-50%, 20px);
+    padding: 10px 18px; border-radius: 999px; background: rgba(20,18,14,.95); border: 1px solid var(--stroke);
+    color: var(--text); font-size: 13px; opacity: 0; transition: all .25s ease; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
 </head>
 <body>
 <header>
   <div class="brand">VORTREX</div>
   <div class="status" id="status">Ready</div>
+  <button class="power" data-c="power" aria-label="Power"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg></button>
 </header>
 
 <main>
-  <div class="pair" id="pair">
-    <h2>Make the arrows work everywhere</h2>
-    <p id="pair-text">Pair once so the remote works in Netflix, YouTube and every other app.</p>
-    <button class="gold-btn" id="pair-start">Pair with TV</button>
-    <div class="code">
-      <input id="pair-code" maxlength="6" placeholder="······" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text">
-      <button class="gold-btn" id="pair-finish">Pair</button>
+  <div class="view-wrap">
+    <div class="card pair" id="pair" style="max-width:380px;margin:0 auto 18px">
+      <h2>Unlock full control</h2>
+      <p id="pair-text">Pair once so the remote works in Netflix, YouTube and every other app.</p>
+      <button class="gold-btn" id="pair-start">Pair with TV</button>
+      <div class="code">
+        <input id="pair-code" maxlength="6" placeholder="······" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <button class="gold-btn" id="pair-finish">Pair</button>
+      </div>
+    </div>
+    <div class="card tip" id="tip" style="max-width:380px;margin:0 auto 18px">
+      <button class="close" id="tip-close" aria-label="Dismiss">×</button>
+      <h2>Make it an app</h2>
+      <p>Tap <b>Share</b> then <b>Add to Home Screen</b> to open Vortrex like an app, full screen.</p>
     </div>
   </div>
-  <div class="notice" id="notice">So Home always opens Vortrex, turn on <b>Vortrex</b> in Settings → System → Accessibility on the TV.</div>
-  <div class="pad">
-    <button class="up" data-c="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
-    <button class="left" data-c="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-    <button class="ok" data-c="ok">OK</button>
-    <button class="right" data-c="right" data-repeat aria-label="Right"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-    <button class="down" data-c="down" data-repeat aria-label="Down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
-  </div>
 
-  <div class="row">
-    <button data-c="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
-    <button data-c="home" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
-    <button data-c="playpause" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path d="M6 5v14l8-7z"/><path d="M17 5v14M21 5v14"/></svg></button>
-  </div>
+  <!-- Remote -->
+  <section class="view active" id="v-remote">
+    <div class="pad">
+      <button class="up" data-c="up" data-repeat aria-label="Up"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+      <button class="left" data-c="left" data-repeat aria-label="Left"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="ok" data-c="ok">OK</button>
+      <button class="right" data-c="right" data-repeat aria-label="Right"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="down" data-c="down" data-repeat aria-label="Down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
 
-  <div class="row">
-    <button data-c="voldown" data-repeat aria-label="Volume down"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 12h4"/></svg></button>
-    <button data-c="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/></svg></button>
-    <button data-c="volup" data-repeat aria-label="Volume up"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 12h4M19 10v4"/></svg></button>
-  </div>
+    <div class="row">
+      <button data-c="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button data-c="home" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
+      <button class="open-kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
+    </div>
 
-  <button id="kbd-toggle" aria-label="Keyboard"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg><span>Keyboard</span></button>
-  <div class="kbd" id="kbd">
-    <input id="text" type="text" placeholder="Type on the TV…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
-    <button id="go">Go</button>
-  </div>
+    <div class="row">
+      <button data-c="rewind" data-repeat aria-label="Rewind"><svg viewBox="0 0 24 24"><path d="M11 6l-7 6 7 6z"/><path d="M20 6l-7 6 7 6z"/></svg></button>
+      <button data-c="playpause" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path d="M6 5v14l8-7z"/><path d="M17 5v14M21 5v14"/></svg></button>
+      <button data-c="ff" data-repeat aria-label="Fast forward"><svg viewBox="0 0 24 24"><path d="M13 6l7 6-7 6z"/><path d="M4 6l7 6-7 6z"/></svg></button>
+    </div>
 
-  <div class="apps">
-    <button data-c="netflix" class="netflix">NETFLIX</button>
-    <button data-c="youtube" class="youtube"><i></i>YouTube</button>
-  </div>
+    <div class="label">Volume</div>
+    <div class="volume">
+      <button data-c="voldown" data-repeat aria-label="Volume down"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button class="mute" data-c="mute" aria-label="Mute"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/></svg></button>
+      <button data-c="volup" data-repeat aria-label="Volume up"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button>
+    </div>
+
+    <div class="apps">
+      <button data-c="netflix" class="netflix">NETFLIX</button>
+      <button data-c="youtube" class="youtube"><i></i>YouTube</button>
+    </div>
+  </section>
+
+  <!-- Touchpad -->
+  <section class="view" id="v-touch">
+    <div class="touch" id="touch">
+      <div class="hint">SWIPE TO MOVE<br>TAP TO SELECT</div>
+      <div class="dot" id="dot"></div>
+    </div>
+    <div class="row">
+      <button data-c="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button data-c="playpause" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path d="M6 5v14l8-7z"/><path d="M17 5v14M21 5v14"/></svg></button>
+      <button class="open-kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
+    </div>
+    <div class="volume">
+      <button data-c="voldown" data-repeat aria-label="Volume down"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button class="mute" data-c="home" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></button>
+      <button data-c="volup" data-repeat aria-label="Volume up"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button>
+    </div>
+  </section>
+
+  <!-- TV apps -->
+  <section class="view" id="v-apps">
+    <div class="section-title">ON YOUR TV</div>
+    <div class="grid" id="grid"></div>
+    <div class="row">
+      <button data-c="input" style="grid-column: span 3; display:flex; gap:10px; font-size:14px"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Switch input (HDMI)</button>
+    </div>
+  </section>
 </main>
+
+<nav>
+  <button class="active" data-view="v-remote"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>REMOTE</button>
+  <button data-view="v-touch"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M12 8v4"/></svg>TOUCHPAD</button>
+  <button data-view="v-apps"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>APPS</button>
+</nav>
+
+<div class="sheet" id="sheet">
+  <div class="bar"></div>
+  <div class="line">
+    <input id="text" type="text" placeholder="Type on the TV…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+    <button class="go gold-btn" id="go">Go</button>
+  </div>
+  <div class="keys">
+    <button id="clear">Clear</button>
+    <button id="done">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
   const key = new URLSearchParams(location.search).get("k") || "";
-  const status = document.getElementById("status");
+  const q = "k=" + encodeURIComponent(key);
+  const $ = id => document.getElementById(id);
+  const status = $("status");
+
+  // Home screen app support.
+  $("manifest").href = "/manifest.json?" + q;
+  $("touch-icon").href = "/app-icon.png?" + q;
 
   function send(command, text) {
-    let url = "/k?c=" + encodeURIComponent(command) + "&k=" + encodeURIComponent(key);
+    let url = "/k?c=" + encodeURIComponent(command) + "&" + q;
     if (text !== undefined) url += "&t=" + encodeURIComponent(text);
-    fetch(url, { method: "POST" })
-      .then(r => setOnline(r.ok))
-      .catch(() => setOnline(false));
+    fetch(url, { method: "POST" }).then(r => setOnline(r.ok)).catch(() => setOnline(false));
   }
 
   function setOnline(ok) {
-    status.textContent = ok ? "Connected" : "TV not reachable";
+    status.textContent = ok ? "Connected" : "Offline";
     status.classList.toggle("off", !ok);
   }
 
-  for (const button of document.querySelectorAll("button[data-c]")) {
+  let toastTimer;
+  function toast(text) {
+    const t = $("toast");
+    t.textContent = text;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // Buttons: press sends once; holding arrows, seek and volume repeats.
+  function wire(button) {
     const command = button.dataset.c;
     let delay, repeat;
-    const stop = () => {
-      clearTimeout(delay); clearInterval(repeat);
-      button.classList.remove("held");
-    };
+    const stop = () => { clearTimeout(delay); clearInterval(repeat); button.classList.remove("held"); };
     button.addEventListener("pointerdown", e => {
       e.preventDefault();
       button.classList.add("held");
       send(command);
       if (navigator.vibrate) navigator.vibrate(8);
-      // Holding an arrow or volume button keeps pressing it.
       if (button.hasAttribute("data-repeat")) {
         delay = setTimeout(() => { repeat = setInterval(() => send(command), 120); }, 400);
       }
@@ -190,70 +346,132 @@
     for (const type of ["pointerup", "pointerleave", "pointercancel"]) button.addEventListener(type, stop);
     button.addEventListener("contextmenu", e => e.preventDefault());
   }
+  document.querySelectorAll("button[data-c]").forEach(wire);
 
-  // Ask the TV whether the arrows and keyboard are available.
-  fetch("/s?k=" + encodeURIComponent(key))
-    .then(r => r.json())
-    .then(s => {
+  // Tabs.
+  let appsLoaded = false;
+  document.querySelectorAll("nav button").forEach(tab => tab.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(t => t.classList.toggle("active", t === tab));
+    document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === tab.dataset.view));
+    if (tab.dataset.view === "v-apps" && !appsLoaded) loadApps();
+  }));
+
+  // Touchpad: each swipe step moves once; a quick tap selects.
+  (() => {
+    const pad = $("touch"), dot = $("dot");
+    const STEP = 46;
+    let start = null, origin = null, moved = false, startTime = 0;
+    const place = e => { const r = pad.getBoundingClientRect(); dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px"; };
+    pad.addEventListener("pointerdown", e => {
+      pad.setPointerCapture(e.pointerId);
+      start = origin = { x: e.clientX, y: e.clientY }; moved = false; startTime = Date.now();
+      pad.classList.add("on"); place(e);
+    });
+    pad.addEventListener("pointermove", e => {
+      if (!origin) return;
+      place(e);
+      const dx = e.clientX - origin.x, dy = e.clientY - origin.y;
+      if (Math.abs(dx) < STEP && Math.abs(dy) < STEP) return;
+      moved = true;
+      if (Math.abs(dx) > Math.abs(dy)) send(dx > 0 ? "right" : "left"); else send(dy > 0 ? "down" : "up");
+      if (navigator.vibrate) navigator.vibrate(5);
+      origin = { x: e.clientX, y: e.clientY };
+    });
+    const end = e => {
+      if (!origin) return;
+      const travel = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+      if (!moved && travel < 12 && Date.now() - startTime < 350) {
+        send("ok");
+        const ring = document.createElement("div");
+        const r = pad.getBoundingClientRect();
+        ring.className = "tap"; ring.style.left = (e.clientX - r.left) + "px"; ring.style.top = (e.clientY - r.top) + "px";
+        pad.appendChild(ring); setTimeout(() => ring.remove(), 500);
+      }
+      origin = null; pad.classList.remove("on");
+    };
+    pad.addEventListener("pointerup", end);
+    pad.addEventListener("pointercancel", end);
+  })();
+
+  // TV apps, with their real icons.
+  function loadApps() {
+    const grid = $("grid");
+    grid.innerHTML = '<div class="skeleton"></div>'.repeat(9);
+    fetch("/apps?" + q).then(r => r.json()).then(apps => {
+      appsLoaded = true;
+      grid.innerHTML = "";
+      for (const app of apps) {
+        const b = document.createElement("button");
+        b.className = "app";
+        const img = document.createElement("img");
+        img.loading = "lazy"; img.alt = ""; img.src = "/icon?" + q + "&p=" + encodeURIComponent(app.p);
+        const name = document.createElement("span");
+        name.textContent = app.n;
+        b.append(img, name);
+        b.addEventListener("click", () => { send("launch", app.p); toast("Opening " + app.n); });
+        grid.appendChild(b);
+      }
+    }).catch(() => { grid.innerHTML = ""; toast("Couldn't load the TV's apps"); });
+  }
+
+  // Status, pairing and the add-to-home-screen tip.
+  function refresh() {
+    fetch("/s?" + q).then(r => r.json()).then(s => {
       setOnline(true);
-      document.getElementById("notice").classList.toggle("show", !s.full);
-      document.getElementById("pair").classList.toggle("show", !s.paired);
-    })
-    .catch(() => setOnline(false));
+      $("pair").classList.toggle("show", !s.paired);
+    }).catch(() => setOnline(false));
+  }
+  refresh();
+  setInterval(refresh, 15000);
 
-  // Pairing with the TV's remote service: the TV shows a code, typed in here.
-  const pair = document.getElementById("pair");
-  const pairText = document.getElementById("pair-text");
-  const pairCode = document.getElementById("pair-code");
-  function pairStep(query) {
-    return fetch("/pair?k=" + encodeURIComponent(key) + "&" + query).then(r => r.json());
-  }
-  function pairMessage(text, error) {
-    pairText.textContent = text;
-    pairText.classList.toggle("err", !!error);
-  }
-  document.getElementById("pair-start").addEventListener("click", () => {
+  let tipHidden = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  try { tipHidden = tipHidden || localStorage.getItem("tip") === "1"; } catch (e) {}
+  $("tip").classList.toggle("show", !tipHidden);
+  $("tip-close").addEventListener("click", () => {
+    $("tip").classList.remove("show");
+    try { localStorage.setItem("tip", "1"); } catch (e) {}
+  });
+
+  const pair = $("pair"), pairText = $("pair-text"), pairCode = $("pair-code");
+  const pairStep = query => fetch("/pair?" + q + "&" + query).then(r => r.json());
+  function pairMessage(text, error) { pairText.textContent = text; pairText.classList.toggle("err", !!error); }
+  $("pair-start").addEventListener("click", () => {
     pairMessage("Connecting to the TV…");
     pairStep("step=start").then(r => {
       if (!r.ok) return pairMessage(r.error, true);
       pair.classList.add("asking");
       pairMessage("Type the code shown on the TV.");
-      pairCode.value = "";
-      pairCode.focus();
+      pairCode.value = ""; pairCode.focus();
     }).catch(() => pairMessage("Couldn't reach the TV. Is it on the same Wi-Fi?", true));
   });
-  document.getElementById("pair-finish").addEventListener("click", () => {
+  $("pair-finish").addEventListener("click", () => {
     pairMessage("Pairing…");
     pairStep("step=code&t=" + encodeURIComponent(pairCode.value)).then(r => {
       if (!r.ok) return pairMessage(r.error, true);
-      pairMessage("Paired! The remote now works in every app.");
       pair.classList.remove("asking");
-      document.getElementById("pair-start").style.display = "none";
+      $("pair-start").style.display = "none";
+      pairMessage("Paired! The remote now works in every app.");
       setTimeout(() => pair.classList.remove("show"), 2500);
     }).catch(() => pairMessage("Couldn't reach the TV. Try again.", true));
   });
 
-  // Keyboard: whatever is typed here replaces the text in the TV's search box.
-  const kbd = document.getElementById("kbd");
-  const input = document.getElementById("text");
+  // Keyboard sheet: what's typed here goes into the TV's search box.
+  const sheet = $("sheet"), input = $("text");
   let typing;
-  document.getElementById("kbd-toggle").addEventListener("click", () => {
-    kbd.classList.toggle("open");
-    if (kbd.classList.contains("open")) { input.value = ""; input.focus(); send("typestart"); }
-  });
-  input.addEventListener("input", () => {
-    clearTimeout(typing);
-    typing = setTimeout(() => send("type", input.value), 200);
-  });
+  function openKeyboard() { sheet.classList.add("open"); input.value = ""; send("typestart"); setTimeout(() => input.focus(), 50); }
+  function closeKeyboard() { input.blur(); sheet.classList.remove("open"); }
+  document.querySelectorAll(".open-kbd").forEach(b => b.addEventListener("click", openKeyboard));
+  input.addEventListener("input", () => { clearTimeout(typing); typing = setTimeout(() => send("type", input.value), 200); });
   function submit() {
     clearTimeout(typing);
     send("type", input.value);
     setTimeout(() => send("enter"), 150);
-    input.blur();
-    kbd.classList.remove("open");
+    closeKeyboard();
   }
   input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submit(); } });
-  document.getElementById("go").addEventListener("click", submit);
+  $("go").addEventListener("click", submit);
+  $("clear").addEventListener("click", () => { input.value = ""; send("type", ""); input.focus(); });
+  $("done").addEventListener("click", closeKeyboard);
 </script>
 </body>
 </html>
