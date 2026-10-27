@@ -18,7 +18,6 @@ import java.util.Date
 import java.util.concurrent.Executors
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLEngine
-import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.X509ExtendedKeyManager
 import javax.net.ssl.X509TrustManager
@@ -115,7 +114,11 @@ object AtvRemote {
         socket.close()
         pairingSocket = null
         prefs().edit().putBoolean("paired", true).apply()
-        sender.execute { connect() }
+        // Give the TV a moment to save the new pairing before connecting.
+        sender.execute {
+            Thread.sleep(1500)
+            connect()
+        }
     }
 
     // Key presses.
@@ -166,15 +169,11 @@ object AtvRemote {
     }
 
     private fun connect() {
+        // A failed connection doesn't mean the pairing is gone: keep it and retry later.
         val socket = try {
             open(REMOTE_PORT)
-        } catch (e: SSLHandshakeException) {
-            // The TV no longer recognises us, so pair again.
-            prefs().edit().putBoolean("paired", false).apply()
-            fail("The TV forgot the pairing: ${e.message}")
-            return
         } catch (e: Exception) {
-            fail("Can't reach the TV's remote service: ${e.message}")
+            fail("Remote service refused: ${e.message}")
             return
         }
         remoteSocket = socket
@@ -240,25 +239,27 @@ object AtvRemote {
 
     // TLS with our own certificate, which the TV remembers after pairing.
 
-    // Tries the TV itself first, then its Wi-Fi address, in case the service only listens there.
+    // Tries the TV itself and its Wi-Fi address, each with the default TLS
+    // version and then TLS 1.2 only, and reports what each attempt said.
     private fun open(port: Int): SSLSocket {
         val context = SSLContext.getInstance("TLS")
         context.init(arrayOf(KeystoreKeyManager(keyStore())), arrayOf(TrustAnyTv), null)
-        var error: Exception = IllegalStateException("No network")
-        for (host in listOfNotNull(HOST, RemoteServer.localIp())) {
-            try {
-                val tcp = Socket().apply { connect(InetSocketAddress(host, port), 2000) }
-                return (context.socketFactory.createSocket(tcp, host, port, true) as SSLSocket).apply {
-                    soTimeout = 0
-                    startHandshake()
+        val errors = mutableListOf<String>()
+        for (host in listOfNotNull(HOST, RemoteServer.localIp()).distinct()) {
+            for (tls12Only in listOf(false, true)) {
+                try {
+                    val tcp = Socket().apply { connect(InetSocketAddress(host, port), 2000) }
+                    return (context.socketFactory.createSocket(tcp, host, port, true) as SSLSocket).apply {
+                        if (tls12Only) enabledProtocols = arrayOf("TLSv1.2")
+                        soTimeout = 0
+                        startHandshake()
+                    }
+                } catch (e: Exception) {
+                    errors += "$host${if (tls12Only) " tls1.2" else ""}: ${e.message}"
                 }
-            } catch (e: SSLHandshakeException) {
-                throw e
-            } catch (e: Exception) {
-                error = e
             }
         }
-        throw error
+        throw IllegalStateException(errors.joinToString(" | "))
     }
 
     private fun keyStore(): KeyStore {
