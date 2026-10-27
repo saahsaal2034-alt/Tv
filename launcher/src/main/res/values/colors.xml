@@ -1,8 +1,6 @@
 <resources>
     <color name="bg_top">#FF0C0B09</color>
     <color name="bg_bottom">#FF000000</color>
-    <color name="glow_gold">#38C9A24A</color>
-    <color name="glow_warm">#22A0743A</color>
     <color name="card">#0DFFF4DC</color>
     <color name="card_stroke">#40D4AF37</color>
     <color name="accent">#FFD4AF37</color>
