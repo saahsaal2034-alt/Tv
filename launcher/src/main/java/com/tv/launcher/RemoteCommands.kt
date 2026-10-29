@@ -5,6 +5,7 @@ import android.content.Intent
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.view.KeyEvent
 
 /**
@@ -28,10 +29,18 @@ object RemoteCommands {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun run(context: Context, command: String, text: String?) {
-        // Once paired, the TV's own remote service works in every app. If it
+        val fallback = { mainHandler.post { runLocally(context, command, text) }; Unit }
+        // Full control through the TV's debugging connection works in every app.
+        if (AdbRemote.connected) {
+            when (command) {
+                "type" -> return AdbRemote.type(text.orEmpty(), fallback)
+                "typestart" -> return AdbRemote.startTyping()
+                else -> keys[command]?.let { return AdbRemote.key(it, fallback) }
+            }
+        }
+        // Once paired, the TV's own remote service also works in every app. If it
         // can't be reached, fall back to the accessibility service.
         if (AtvRemote.paired) {
-            val fallback = { mainHandler.post { runLocally(context, command, text) }; Unit }
             when (command) {
                 "type" -> return AtvRemote.type(text.orEmpty(), fallback)
                 "typestart" -> return AtvRemote.startTyping()
@@ -49,6 +58,9 @@ object RemoteCommands {
             return home.pressKey(keys.getValue(command))
         }
         if (command == "launch") return Apps.launch(context, text.orEmpty())
+        // Setup helpers: open the TV settings pages needed to turn on debugging.
+        if (command == "devsettings") return openSettings(context, Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+        if (command == "aboutsettings") return openSettings(context, Settings.ACTION_DEVICE_INFO_SETTINGS)
         if (HomeButtonService.instance?.run(command, text) == true) return
         val audio = context.getSystemService(AudioManager::class.java)
         when (command) {
@@ -61,6 +73,15 @@ object RemoteCommands {
             "netflix" -> Apps.launch(context, NETFLIX)
             "youtube" -> Apps.launch(context, YOUTUBE)
             "home" -> openHome(context)
+        }
+    }
+
+    private fun openSettings(context: Context, action: String) {
+        val intent = Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            context.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 

@@ -145,9 +145,15 @@
     text-transform: uppercase; outline: none; width: 100%;
   }
   .card input:focus { border-color: var(--accent); }
-  .pair .code { display: none; gap: 10px; flex-direction: column; }
-  .pair.asking .code { display: flex; }
-  .pair.asking #pair-start { display: none; }
+  .steps { margin: 0; padding: 0 0 0 4px; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 14px; text-align: left; }
+  .steps li { counter-increment: step; position: relative; padding-left: 38px; font-size: 13px; line-height: 1.45; color: var(--dim); display: flex; flex-direction: column; gap: 8px; }
+  .steps li b { color: var(--text); font-weight: 600; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: -2px; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; font: 600 13px/1 var(--serif); color: #000; background: var(--gold);
+  }
+  .steps .step-btn { height: 42px; font-size: 13px; border-radius: 14px; color: var(--accent); }
+  .steps #connect { height: 48px; }
   .err { color: #ff8a7a !important; }
   .details { font: 11px/1.5 ui-monospace, Menlo, monospace; color: var(--dim); text-align: left; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.35); user-select: text; -webkit-user-select: text; }
   .close { position: absolute; top: 10px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: transparent; color: var(--dim); font-size: 18px; }
@@ -203,13 +209,16 @@
   <div class="view-wrap">
     <div class="card pair" id="pair" style="max-width:380px;margin:0 auto 18px">
       <h2>Unlock full control</h2>
-      <p id="pair-text">Pair once so the remote works in Netflix, YouTube and every other app.</p>
-      <button class="gold-btn" id="pair-start">Pair with TV</button>
+      <p id="pair-text">Three quick steps so the remote works in Netflix, YouTube and every app.</p>
+      <ol class="steps">
+        <li id="step1"><span><b>Turn on Developer options.</b> Open About, then press <b>Android TV OS build</b> 7 times with the TV remote.</span>
+          <button class="step-btn" data-c="aboutsettings">Open About on TV</button></li>
+        <li id="step2"><span><b>Turn on USB debugging</b> in Developer options.</span>
+          <button class="step-btn" data-c="devsettings">Open Developer options on TV</button></li>
+        <li id="step3"><span><b>Connect</b>, then on the TV tick <b>Always allow</b> and press <b>OK</b>.</span>
+          <button class="gold-btn" id="connect">Connect</button></li>
+      </ol>
       <div class="details" id="details"></div>
-      <div class="code">
-        <input id="pair-code" maxlength="6" placeholder="······" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
-        <button class="gold-btn" id="pair-finish">Pair</button>
-      </div>
     </div>
     <div class="card tip" id="tip" style="max-width:380px;margin:0 auto 18px">
       <button class="close" id="tip-close" aria-label="Dismiss">×</button>
@@ -417,34 +426,39 @@
   }
 
   // Status, pairing and the add-to-home-screen tip.
-  // Shows whether the TV's own remote service is connected ("Full control"),
-  // and why not if pairing worked but the connection didn't.
+  // Shows whether full control (the TV's debugging connection) is on, and
+  // walks through turning it on if not.
   let refreshTimer;
   function refresh() {
     clearTimeout(refreshTimer);
     fetch("/s?" + q).then(r => r.json()).then(s => {
       status.classList.remove("off");
-      status.textContent = s.paired && s.live ? "Full control" : s.paired ? "Connecting…" : "Basic control";
-      const broken = s.paired && !s.live && s.err;
-      if (broken) {
-        status.textContent = "Basic control";
-        pairMessage("Full control isn't connected: " + s.err + ". Try pairing again.", true);
-        $("pair-start").style.display = "";
+      const full = s.adb === "connected" || s.live;
+      status.textContent = full ? "Full control" : "Basic control";
+      $("pair").classList.toggle("show", !full || pairJustFinished);
+      if (s.adb === "connecting") pairMessage("Connecting to the TV…");
+      else if (s.adb === "approve") pairMessage("Look at the TV: tick Always allow, then press OK.");
+      else if (s.adb === "connected") pairMessage("Full control is on. The remote now works in every app.");
+      else if (s.adb === "error") pairMessage(s.adbErr || "Couldn't connect.", true);
+      if (s.adb === "connected" && !pairJustFinished && !$("pair").dataset.done) {
+        pairJustFinished = true;
+        $("pair").dataset.done = "1";
+        setTimeout(() => { pairJustFinished = false; $("pair").classList.remove("show"); }, 3000);
       }
-      $("pair").classList.toggle("show", !s.paired || !!broken);
       // Technical details to screenshot when something isn't working.
       const versions = { 30: "11", 31: "12", 32: "12L", 33: "13", 34: "14", 35: "15", 36: "16" };
       $("details").textContent =
         "Android " + (versions[s.android] || s.android) +
-        " · paired: " + (s.paired ? "yes" : "no") +
-        " · full: " + (s.live ? "yes" : "no") +
-        (s.err ? "\nWhy: " + s.err : "") +
+        " · debugging: " + s.adb +
+        (s.adbErr ? "\nWhy: " + s.adbErr : "") +
         "\nLast arrow: " + (s.nav || "none yet") +
         " · accessibility: " + (s.full ? "on" : "off");
       $("details").style.whiteSpace = "pre-wrap";
-      refreshTimer = setTimeout(refresh, s.paired && !s.live ? 4000 : 15000);
+      const busy = s.adb === "connecting" || s.adb === "approve";
+      refreshTimer = setTimeout(refresh, busy ? 1500 : full ? 15000 : 5000);
     }).catch(() => { setOnline(false); refreshTimer = setTimeout(refresh, 5000); });
   }
+  let pairJustFinished = false;
 
   let tipHidden = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
   try { tipHidden = tipHidden || localStorage.getItem("tip") === "1"; } catch (e) {}
@@ -454,27 +468,11 @@
     try { localStorage.setItem("tip", "1"); } catch (e) {}
   });
 
-  const pair = $("pair"), pairText = $("pair-text"), pairCode = $("pair-code");
-  const pairStep = query => fetch("/pair?" + q + "&" + query).then(r => r.json());
+  const pairText = $("pair-text");
   function pairMessage(text, error) { pairText.textContent = text; pairText.classList.toggle("err", !!error); }
-  $("pair-start").addEventListener("click", () => {
+  $("connect").addEventListener("click", () => {
     pairMessage("Connecting to the TV…");
-    pairStep("step=start").then(r => {
-      if (!r.ok) return pairMessage(r.error, true);
-      pair.classList.add("asking");
-      pairMessage("Type the code shown on the TV.");
-      pairCode.value = ""; pairCode.focus();
-    }).catch(() => pairMessage("Couldn't reach the TV. Is it on the same Wi-Fi?", true));
-  });
-  $("pair-finish").addEventListener("click", () => {
-    pairMessage("Pairing…");
-    pairStep("step=code&t=" + encodeURIComponent(pairCode.value)).then(r => {
-      if (!r.ok) return pairMessage(r.error, true);
-      pair.classList.remove("asking");
-      $("pair-start").style.display = "none";
-      pairMessage("Paired! The remote now works in every app.");
-      setTimeout(() => { pair.classList.remove("show"); refresh(); }, 2500);
-    }).catch(() => pairMessage("Couldn't reach the TV. Try again.", true));
+    fetch("/adb?" + q).then(() => setTimeout(refresh, 600)).catch(() => pairMessage("Couldn't reach the TV. Is it on the same Wi-Fi?", true));
   });
 
   // Keyboard sheet: what's typed here goes into the TV's search box.

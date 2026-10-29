@@ -35,6 +35,7 @@ object RemoteServer {
         if (running) return
         val appContext = context.applicationContext
         AtvRemote.init(appContext)
+        AdbRemote.init(appContext)
         val key = key(appContext)
         val page = appContext.assets.open("remote.html").use { it.readBytes() }
         val socket = try {
@@ -85,8 +86,10 @@ object RemoteServer {
                     if (AtvRemote.paired && !AtvRemote.connected) AtvRemote.warmUp()
                     val error = AtvRemote.lastError?.let(::jsonString) ?: "null"
                     val nav = HomeButtonService.lastResult?.let(::jsonString) ?: "null"
+                    val adbError = AdbRemote.lastError?.let(::jsonString) ?: "null"
                     val json = "{\"full\":$full,\"paired\":${AtvRemote.paired},\"live\":${AtvRemote.connected}," +
-                        "\"err\":$error,\"nav\":$nav,\"android\":${android.os.Build.VERSION.SDK_INT}}"
+                        "\"err\":$error,\"nav\":$nav,\"android\":${android.os.Build.VERSION.SDK_INT}," +
+                        "\"adb\":\"${AdbRemote.state}\",\"adbErr\":$adbError}"
                     respond(out, "200 OK", "application/json", json.toByteArray())
                 }
                 path == "/pair" -> {
@@ -99,6 +102,10 @@ object RemoteServer {
                     }
                     val json = if (error == null) "{\"ok\":true}" else "{\"ok\":false,\"error\":\"${error.replace("\"", "'")}\"}"
                     respond(out, "200 OK", "application/json", json.toByteArray())
+                }
+                path == "/adb" -> {
+                    AdbRemote.connectAsync()
+                    respond(out, "200 OK", "application/json", "{\"ok\":true}".toByteArray())
                 }
                 path == "/apps" -> {
                     val json = Apps.all(context).joinToString(",", "[", "]") {
