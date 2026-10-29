@@ -18,4 +18,5 @@
     <string name="set_display">Display &amp; Sound</string>
     <string name="set_accessibility">Accessibility</string>
     <string name="set_all">All settings</string>
+    <string name="keep_alive_text">Phone remote is ready</string>
 </resources>

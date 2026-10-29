@@ -10,7 +10,12 @@
     <!-- Serves the phone remote page over the home Wi-Fi. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Keeps Vortrex running while other apps are open, for the phone remote. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
     <application
+        android:name=".VortrexApp"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
@@ -35,6 +40,15 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".KeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the phone remote server running so the phone can control the TV" />
+        </service>
 
         <service
             android:name=".HomeButtonService"

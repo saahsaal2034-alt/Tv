@@ -68,10 +68,6 @@ class MainActivity : Activity() {
         netflix = setUpTile(R.id.netflix, NETFLIX)
         setUpTile(R.id.youtube, YOUTUBE)
 
-        val appContext = applicationContext
-        RemoteServer.start(this) { command, text ->
-            mainHandler.post { RemoteCommands.run(appContext, command, text) }
-        }
         setUpApps()
         setUpSettings()
         goldShimmer(findViewById(R.id.brand))
